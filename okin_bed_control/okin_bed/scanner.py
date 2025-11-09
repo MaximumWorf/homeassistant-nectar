@@ -20,37 +20,57 @@ async def scan_for_beds(timeout: float = 10.0):
     logger.info(f"Looking for devices matching: {', '.join(DEVICE_NAME_PATTERNS)}")
     print()
 
-    devices = await BleakScanner.discover(timeout=timeout)
+    # Dictionary to store devices with their advertisement data
+    devices_found = {}
+
+    def detection_callback(device, advertisement_data):
+        """Callback for each discovered device."""
+        devices_found[device.address] = {
+            'device': device,
+            'rssi': advertisement_data.rssi,
+            'name': device.name or advertisement_data.local_name or "(Unknown)"
+        }
+
+    # Scan with callback to get RSSI
+    scanner = BleakScanner(detection_callback=detection_callback)
+    await scanner.start()
+    await asyncio.sleep(timeout)
+    await scanner.stop()
 
     found_beds = []
     all_devices = []
 
-    for device in devices:
-        all_devices.append(device)
-        if device.name:
-            # Check if device matches OKIN patterns
-            if any(pattern.lower() in device.name.lower() for pattern in DEVICE_NAME_PATTERNS):
-                found_beds.append(device)
+    for addr, data in devices_found.items():
+        device = data['device']
+        name = data['name']
+        rssi = data['rssi']
+
+        all_devices.append(data)
+
+        # Check if device matches OKIN patterns
+        if name and any(pattern.lower() in name.lower() for pattern in DEVICE_NAME_PATTERNS):
+            found_beds.append(data)
 
     # Display found OKIN beds
     if found_beds:
         print("=" * 70)
         print("FOUND OKIN BED DEVICES:")
         print("=" * 70)
-        for device in found_beds:
-            print(f"\nName:    {device.name}")
+        for data in found_beds:
+            device = data['device']
+            print(f"\nName:    {data['name']}")
             print(f"Address: {device.address}")
-            print(f"RSSI:    {device.rssi} dBm")
-            if device.metadata:
-                print(f"Metadata: {device.metadata}")
+            print(f"RSSI:    {data['rssi']} dBm")
         print("=" * 70)
     else:
         print("No OKIN bed devices found.")
         print("\nShowing all discovered BLE devices:")
         print("=" * 70)
-        for device in all_devices:
-            name = device.name or "(Unknown)"
-            print(f"{device.address:20} | {device.rssi:4} dBm | {name}")
+        for data in sorted(all_devices, key=lambda x: x['rssi'], reverse=True):
+            device = data['device']
+            name = data['name']
+            rssi = data['rssi']
+            print(f"{device.address:20} | {rssi:4} dBm | {name}")
         print("=" * 70)
 
     return found_beds
