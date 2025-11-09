@@ -1,0 +1,16 @@
+{
+  "domain": "okin_bed",
+  "name": "OKIN Adjustable Bed",
+  "version": "0.1.0",
+  "documentation": "https://github.com/yourusername/okin-bed-control",
+  "issue_tracker": "https://github.com/yourusername/okin-bed-control/issues",
+  "requirements": ["bleak>=0.20.0"],
+  "codeowners": ["@yourusername"],
+  "iot_class": "local_polling",
+  "config_flow": true,
+  "bluetooth": [
+    {
+      "connectable": true
+    }
+  ]
+}
