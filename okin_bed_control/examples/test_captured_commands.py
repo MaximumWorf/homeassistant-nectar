@@ -5,7 +5,7 @@ Test script for captured OKIN bed commands.
 SAFETY WARNINGS:
 - Do NOT test with anyone in the bed
 - Be ready to power off the bed if needed
-- Test commands are SHORT duration (0.5s)
+- Position commands run for 5 seconds (sent repeatedly like holding button)
 - You can abort at any time with Ctrl+C
 """
 
@@ -41,7 +41,7 @@ COMMANDS = {
 }
 
 
-async def test_command(bed, name, command_bytes, duration=0.5):
+async def test_command(bed, name, command_bytes, duration=5.0):
     """
     Test a single command.
 
@@ -49,7 +49,7 @@ async def test_command(bed, name, command_bytes, duration=0.5):
         bed: OkinBed instance
         name: Command name
         command_bytes: Bytes to send
-        duration: How long to run command (seconds)
+        duration: How long to run command (seconds) - default 5s for position controls
     """
     print(f"\n{'='*70}")
     print(f"Testing: {name}")
@@ -67,13 +67,24 @@ async def test_command(bed, name, command_bytes, duration=0.5):
         return True
 
     try:
-        print(f"Sending command...")
-        await bed._send_command(command_bytes)
-
         if duration > 0:
-            await asyncio.sleep(duration)
+            # For position controls, send command repeatedly (like holding button)
+            print(f"Holding command for {duration}s (sending every 0.1s)...")
+            start_time = asyncio.get_event_loop().time()
+            count = 0
+
+            while (asyncio.get_event_loop().time() - start_time) < duration:
+                await bed._send_command(command_bytes)
+                count += 1
+                await asyncio.sleep(0.1)
+
+            print(f"Sent command {count} times")
             print(f"Sending STOP...")
             await bed._send_command(COMMANDS['STOP'])
+        else:
+            # For presets and single commands, just send once
+            print(f"Sending command...")
+            await bed._send_command(command_bytes)
 
         print("\n✓ Command sent successfully")
 
@@ -108,7 +119,8 @@ async def main():
     print("\n⚠️  SAFETY WARNINGS:")
     print("  - Do NOT test with anyone in the bed")
     print("  - Be ready to power off the bed if needed")
-    print("  - Each command will run for 0.5 seconds then STOP")
+    print("  - Position commands will run for 5 seconds then STOP")
+    print("  - Commands are sent repeatedly (like holding a button)")
     print("  - You can skip or quit at any time")
     print("  - Results will be saved to test_results.txt")
     print("\n" + "=" * 70)
@@ -147,7 +159,7 @@ async def main():
         # Step 2: Test position controls
         print("\n" + "=" * 70)
         print("STEP 2: Testing Position Controls")
-        print("These should move bed sections briefly (0.5s)")
+        print("These will move bed sections for 5 seconds (hold pattern)")
         print("=" * 70)
 
         position_commands = [
