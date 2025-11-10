@@ -80,7 +80,7 @@ async def test_command(bed, name, command_bytes, duration=0.5):
         result = input("What happened? (describe or press ENTER): ").strip()
         if result:
             print(f"Recorded: {result}")
-            with open('/root/nectar/test_results.txt', 'a') as f:
+            with open('test_results.txt', 'a') as f:
                 f.write(f"{name}: {result}\n")
 
         # Wait a bit before next command
