@@ -37,14 +37,18 @@ Where:
 | 9 | `5a 01 03 10 30 11 a5`       | `11`        | Few     | **TV/LOUNGE MODE** ✓ |
 | 10 | `5a 01 03 10 30 16 a5`       | `16`        | Few     | **ANTI-SNORE** ✓ |
 | 11 | `5a b0 00 a5`                | N/A         | Single  | Unknown (not tested) |
-| 12 | `5a 01 03 10 30 58 a5`       | `58`        | ?       | Unknown (not tested) |
-| 13 | `5a 01 03 10 30 6f a5`       | `6f`        | ?       | Unknown (not tested) |
-| 14 | `5a 01 03 10 30 73 a5`       | `73`        | ?       | Unknown (not tested) |
-| 15 | `5a 01 03 10 30 74 a5`       | `74`        | ?       | Unknown (not tested) |
+| 12 | `5a 01 03 10 30 58 a5`       | `58`        | Single  | **MASSAGE ON** ✓ |
+| 13 | `5a 01 03 10 30 6f a5`       | `6f`        | Single  | Does nothing |
+| 14 | `5a 01 03 10 30 73 a5`       | `73`        | Single  | **LIGHT ON** ✓ |
+| 15 | `5a 01 03 10 30 74 a5`       | `74`        | Single  | **LIGHT OFF** ✓ |
 
 ## Missing Commands
 
-**LUMBAR UP** - Not captured in original BLE snoop. Need to recapture this specific command.
+Still need to capture:
+- **LUMBAR UP** - Not in original BLE snoop
+- **MASSAGE OFF** - May need separate capture
+- **MASSAGE WAVE patterns** - If bed supports multiple massage modes
+- **LIGHT BRIGHTNESS controls** - If bed supports dimming
 
 ## Timing Analysis
 
