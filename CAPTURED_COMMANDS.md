@@ -42,11 +42,27 @@ Where:
 | 14 | `5a 01 03 10 30 73 a5`       | `73`        | Single  | **LIGHT ON** ✓ |
 | 15 | `5a 01 03 10 30 74 a5`       | `74`        | Single  | **LIGHT OFF** ✓ |
 
-## Missing Commands
+## Additional Discovered Commands
 
-Still need to capture:
-- **LUMBAR UP** - Not in original BLE snoop
-- **MASSAGE OFF** - May need separate capture
+**LUMBAR UP** - Found via systematic testing: `5a 01 03 10 30 04 a5` ✓
+
+## Command Byte Pattern
+
+Position controls follow a logical pattern:
+```
+00 = HEAD_UP
+01 = HEAD_DOWN
+02 = FOOT_UP
+03 = FOOT_DOWN
+04 = LUMBAR_UP ✓ (discovered via testing)
+07 = LUMBAR_DOWN
+0f = STOP
+```
+
+## Still Missing Commands
+
+May need additional BLE capture:
+- **MASSAGE OFF** - Likely requires separate button press capture
 - **MASSAGE WAVE patterns** - If bed supports multiple massage modes
 - **LIGHT BRIGHTNESS controls** - If bed supports dimming
 
