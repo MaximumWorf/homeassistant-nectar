@@ -34,39 +34,45 @@ DEVICE_NAME_PATTERNS = [
     "Luxe",
 ]
 
-# Command bytes (placeholders - to be determined via packet capture)
-# These will need to be reverse engineered from actual BLE traffic
+# Command bytes - captured and confirmed from BLE traffic
 class Command:
-    """Command byte constants (to be populated via reverse engineering)."""
+    """Command byte constants - tested and verified."""
     # Position control
-    HEAD_UP = bytes([0x00])  # Placeholder
-    HEAD_DOWN = bytes([0x01])  # Placeholder
-    LUMBAR_UP = bytes([0x02])  # Placeholder
-    LUMBAR_DOWN = bytes([0x03])  # Placeholder
-    FOOT_UP = bytes([0x04])  # Placeholder
-    FOOT_DOWN = bytes([0x05])  # Placeholder
-    STOP = bytes([0x06])  # Placeholder
+    HEAD_UP = bytes([0x5a, 0x01, 0x03, 0x10, 0x30, 0x00, 0xa5])
+    HEAD_DOWN = bytes([0x5a, 0x01, 0x03, 0x10, 0x30, 0x01, 0xa5])
+    LUMBAR_UP = bytes([0x00])  # NOT YET CAPTURED
+    LUMBAR_DOWN = bytes([0x5a, 0x01, 0x03, 0x10, 0x30, 0x07, 0xa5])
+    FOOT_UP = bytes([0x5a, 0x01, 0x03, 0x10, 0x30, 0x02, 0xa5])
+    FOOT_DOWN = bytes([0x5a, 0x01, 0x03, 0x10, 0x30, 0x03, 0xa5])
+    STOP = bytes([0x5a, 0x01, 0x03, 0x10, 0x30, 0x0f, 0xa5])
 
     # Presets
-    FLAT = bytes([0x10])  # Placeholder
-    ZERO_GRAVITY = bytes([0x11])  # Placeholder
-    LOUNGE = bytes([0x12])  # Placeholder
-    ANTI_SNORE = bytes([0x13])  # Placeholder
-    ASCENT = bytes([0x14])  # Placeholder
+    FLAT = bytes([0x5a, 0x01, 0x03, 0x10, 0x30, 0x10, 0xa5])
+    ZERO_GRAVITY = bytes([0x5a, 0x01, 0x03, 0x10, 0x30, 0x13, 0xa5])
+    LOUNGE = bytes([0x5a, 0x01, 0x03, 0x10, 0x30, 0x11, 0xa5])  # TV mode
+    ANTI_SNORE = bytes([0x5a, 0x01, 0x03, 0x10, 0x30, 0x16, 0xa5])
+    ASCENT = bytes([0x00])  # NOT YET CAPTURED
 
-    # Massage
-    MASSAGE_ON = bytes([0x20])  # Placeholder
-    MASSAGE_OFF = bytes([0x21])  # Placeholder
-    MASSAGE_WAVE_1 = bytes([0x22])  # Placeholder
-    MASSAGE_WAVE_2 = bytes([0x23])  # Placeholder
-    MASSAGE_WAVE_3 = bytes([0x24])  # Placeholder
+    # Unknown - possibly massage/light (not yet tested)
+    UNKNOWN_58 = bytes([0x5a, 0x01, 0x03, 0x10, 0x30, 0x58, 0xa5])
+    UNKNOWN_6F = bytes([0x5a, 0x01, 0x03, 0x10, 0x30, 0x6f, 0xa5])
+    UNKNOWN_73 = bytes([0x5a, 0x01, 0x03, 0x10, 0x30, 0x73, 0xa5])
+    UNKNOWN_74 = bytes([0x5a, 0x01, 0x03, 0x10, 0x30, 0x74, 0xa5])
+    UNKNOWN_SPECIAL = bytes([0x5a, 0xb0, 0x00, 0xa5])
 
-    # Lighting
-    LIGHT_ON = bytes([0x30])  # Placeholder
-    LIGHT_OFF = bytes([0x31])  # Placeholder
-    LIGHT_TOGGLE = bytes([0x32])  # Placeholder
-    BRIGHTNESS_UP = bytes([0x33])  # Placeholder
-    BRIGHTNESS_DOWN = bytes([0x34])  # Placeholder
+    # Massage (placeholders - not captured yet)
+    MASSAGE_ON = bytes([0x00])  # NOT YET CAPTURED
+    MASSAGE_OFF = bytes([0x00])  # NOT YET CAPTURED
+    MASSAGE_WAVE_1 = bytes([0x00])  # NOT YET CAPTURED
+    MASSAGE_WAVE_2 = bytes([0x00])  # NOT YET CAPTURED
+    MASSAGE_WAVE_3 = bytes([0x00])  # NOT YET CAPTURED
+
+    # Lighting (placeholders - not captured yet)
+    LIGHT_ON = bytes([0x00])  # NOT YET CAPTURED
+    LIGHT_OFF = bytes([0x00])  # NOT YET CAPTURED
+    LIGHT_TOGGLE = bytes([0x00])  # NOT YET CAPTURED
+    BRIGHTNESS_UP = bytes([0x00])  # NOT YET CAPTURED
+    BRIGHTNESS_DOWN = bytes([0x00])  # NOT YET CAPTURED
 
 
 class BedPosition(Enum):

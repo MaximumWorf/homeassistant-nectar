@@ -22,25 +22,29 @@ Where:
 - `XX` = Action byte (varies by command)
 - `a5` = Checksum / End byte
 
-## Captured Commands
+## Captured Commands (TESTED & CONFIRMED)
 
-| # | Hex Bytes                    | Action Byte | Pattern | Likely Function |
-|---|------------------------------|-------------|---------|-----------------|
-| 1 | `5a 01 03 10 30 00 a5`       | `00`        | Held    | Head/Foot Down? |
-| 2 | `5a 01 03 10 30 0f a5`       | `0f`        | Single  | **STOP** |
-| 3 | `5a 01 03 10 30 01 a5`       | `01`        | Held    | Head Up? |
-| 4 | `5a 01 03 10 30 07 a5`       | `07`        | Held    | Foot Up? |
-| 5 | `5a 01 03 10 30 02 a5`       | `02`        | Held    | Foot Down? |
-| 6 | `5a 01 03 10 30 03 a5`       | `03`        | Held    | Lumbar Up? |
-| 7 | `5a 01 03 10 30 10 a5`       | `10`        | Few     | Preset Position? |
-| 8 | `5a 01 03 10 30 13 a5`       | `13`        | Few     | Preset Position? |
-| 9 | `5a 01 03 10 30 11 a5`       | `11`        | Few     | Preset Position? |
-| 10 | `5a 01 03 10 30 16 a5`       | `16`        | Few     | Preset Position? |
-| 11 | `5a b0 00 a5`                | N/A         | Single  | Special Command? |
-| 12 | `5a 01 03 10 30 58 a5`       | `58`        | ?       | Light/Massage? |
-| 13 | `5a 01 03 10 30 6f a5`       | `6f`        | ?       | Light/Massage? |
-| 14 | `5a 01 03 10 30 73 a5`       | `73`        | ?       | Light/Massage? |
-| 15 | `5a 01 03 10 30 74 a5`       | `74`        | ?       | Light/Massage? |
+| # | Hex Bytes                    | Action Byte | Pattern | **CONFIRMED Function** |
+|---|------------------------------|-------------|---------|------------------------|
+| 1 | `5a 01 03 10 30 00 a5`       | `00`        | Held    | **HEAD UP** ✓ |
+| 2 | `5a 01 03 10 30 0f a5`       | `0f`        | Single  | **STOP** ✓ |
+| 3 | `5a 01 03 10 30 01 a5`       | `01`        | Held    | **HEAD DOWN** ✓ |
+| 4 | `5a 01 03 10 30 07 a5`       | `07`        | Held    | **LUMBAR DOWN** ✓ |
+| 5 | `5a 01 03 10 30 02 a5`       | `02`        | Held    | **FOOT UP** ✓ |
+| 6 | `5a 01 03 10 30 03 a5`       | `03`        | Held    | **FOOT DOWN** ✓ |
+| 7 | `5a 01 03 10 30 10 a5`       | `10`        | Few     | **FLAT** ✓ |
+| 8 | `5a 01 03 10 30 13 a5`       | `13`        | Few     | **ZERO GRAVITY** ✓ |
+| 9 | `5a 01 03 10 30 11 a5`       | `11`        | Few     | **TV/LOUNGE MODE** ✓ |
+| 10 | `5a 01 03 10 30 16 a5`       | `16`        | Few     | **ANTI-SNORE** ✓ |
+| 11 | `5a b0 00 a5`                | N/A         | Single  | Unknown (not tested) |
+| 12 | `5a 01 03 10 30 58 a5`       | `58`        | ?       | Unknown (not tested) |
+| 13 | `5a 01 03 10 30 6f a5`       | `6f`        | ?       | Unknown (not tested) |
+| 14 | `5a 01 03 10 30 73 a5`       | `73`        | ?       | Unknown (not tested) |
+| 15 | `5a 01 03 10 30 74 a5`       | `74`        | ?       | Unknown (not tested) |
+
+## Missing Commands
+
+**LUMBAR UP** - Not captured in original BLE snoop. Need to recapture this specific command.
 
 ## Timing Analysis
 
