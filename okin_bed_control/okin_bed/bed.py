@@ -119,6 +119,14 @@ class OkinBed:
             # Discover services and characteristics
             await self._discover_characteristics()
 
+            # Enable notifications on RX characteristic if available
+            if self.rx_char_uuid:
+                try:
+                    await self.client.start_notify(self.rx_char_uuid, self._notification_handler)
+                    logger.info("Enabled notifications on RX characteristic")
+                except Exception as e:
+                    logger.warning(f"Could not enable notifications: {e}")
+
             self._connected = True
             logger.info("Connected successfully")
             return True
@@ -167,10 +175,22 @@ class OkinBed:
             if self.tx_char_uuid:
                 break
 
+    def _notification_handler(self, sender, data):
+        """Handle notifications from the bed."""
+        logger.debug(f"Notification from {sender}: {data.hex()}")
+        if self._notification_callback:
+            self._notification_callback(sender, data)
+
     async def disconnect(self):
         """Disconnect from the bed."""
         if self.client and self._connected:
             logger.info("Disconnecting...")
+            # Stop notifications if enabled
+            if self.rx_char_uuid:
+                try:
+                    await self.client.stop_notify(self.rx_char_uuid)
+                except Exception:
+                    pass
             await self.client.disconnect()
             self._connected = False
             logger.info("Disconnected")
@@ -196,7 +216,9 @@ class OkinBed:
 
         try:
             logger.debug(f"Sending command: {command.hex()}")
-            await self.client.write_gatt_char(self.tx_char_uuid, command)
+            # Use write without response (ATT Write Command, opcode 0x52)
+            # This matches the captured BLE traffic from the Android app
+            await self.client.write_gatt_char(self.tx_char_uuid, command, response=False)
             await asyncio.sleep(COMMAND_DELAY)
 
             # TODO: Implement response handling if needed
