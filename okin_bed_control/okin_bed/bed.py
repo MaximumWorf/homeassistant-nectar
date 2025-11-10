@@ -10,6 +10,7 @@ from .constants import (
     OKIN_SERVICE_UUID,
     OKIN_TX_CHAR_UUID,
     OKIN_RX_CHAR_UUID,
+    NUS_SERVICE_UUID,
     NUS_TX_CHAR_UUID,
     NUS_RX_CHAR_UUID,
     DEVICE_NAME_PATTERNS,
@@ -150,7 +151,7 @@ class OkinBed:
 
         # Try Nordic UART Service
         for service in self.client.services:
-            if service.uuid.lower() == NUS_TX_CHAR_UUID.lower()[:36]:  # Match service part
+            if service.uuid.lower() == NUS_SERVICE_UUID.lower():
                 logger.info(f"Found NUS service: {service.uuid}")
                 self.tx_char_uuid = NUS_TX_CHAR_UUID
                 self.rx_char_uuid = NUS_RX_CHAR_UUID
