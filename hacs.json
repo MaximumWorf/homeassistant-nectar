@@ -1,0 +1,9 @@
+{
+  "name": "OKIN Adjustable Bed Control",
+  "content_in_root": true,
+  "render_readme": true,
+  "homeassistant": "2023.1.0",
+  "country": ["US"],
+  "domains": ["cover", "button", "switch", "light"],
+  "iot_class": "Local Push"
+}

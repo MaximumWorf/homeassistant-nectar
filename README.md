@@ -160,33 +160,92 @@ If you have a different OKIN bed model, the commands should work (they use a sta
 
 ## 📱 Home Assistant Installation
 
-### Connection Modes
+### Method 1: HACS (Recommended) ⭐
 
-This integration supports two connection modes:
+1. **Add Custom Repository:**
+   - HACS → Integrations → ⋮ (menu) → Custom repositories
+   - Repository: `https://github.com/MaximumWorf/hassio-nectar`
+   - Category: Integration
+   - Click Add
 
-**Direct Mode** (Default)
-- Home Assistant device has Bluetooth
-- HA connects directly to bed via BLE
-- Simplest setup
+2. **Install:**
+   - HACS → Integrations → Search "OKIN"
+   - Click "OKIN Adjustable Bed Control"
+   - Click "Download"
 
-**Remote Mode** (Recommended for split setups)
-- Home Assistant on different device from BLE controller
-- Dedicated Raspberry Pi near bed runs API server
-- HA sends commands over network
-- **See `REMOTE_SETUP.md` for detailed guide**
+3. **Restart Home Assistant**
 
-### Manual Installation
+4. **Configure:**
+   - Settings → Devices & Services → Add Integration
+   - Search "OKIN"
+   - Follow setup wizard (choose Direct or Remote mode)
+
+### Method 2: Manual Installation
+
 ```bash
-cp -r home_assistant/custom_components/okin_bed ~/.homeassistant/custom_components/
+cd /config  # or ~/.homeassistant
+mkdir -p custom_components
+cd custom_components
+git clone https://github.com/MaximumWorf/hassio-nectar.git
+cp -r hassio-nectar/custom_components/okin_bed .
+rm -rf hassio-nectar
 ```
 
-Then restart Home Assistant and add via Integrations:
-1. Settings → Devices & Services → Add Integration
-2. Search for "OKIN"
-3. Select your bed
-4. Choose connection mode (Direct or Remote)
-5. If Remote: Enter API server URL (e.g., `http://192.168.1.100:8000`)
-6. Name your bed
+Then restart and configure as above.
+
+### Connection Modes
+
+**Direct Mode** - HA device has Bluetooth
+- Simplest setup
+- HA connects directly to bed via BLE
+- Choose this if your HA device is near the bed
+
+**Remote Mode** - Separate BLE controller
+- Dedicated Raspberry Pi near bed runs API server
+- HA sends commands over network
+- **Perfect for split king setups**
+- See [Quick Install for BLE Controller](#ble-controller-quick-install) below
+
+## 🔧 BLE Controller Installation (Remote Mode)
+
+### Method 1: One-Liner Install (Easiest) ⭐
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/MaximumWorf/hassio-nectar/main/quick_install.sh | bash
+```
+
+This will:
+- Install all dependencies
+- Clone the repository
+- Set up the API server as a systemd service
+- Configure autostart
+
+### Method 2: Docker
+
+```bash
+# Clone repo
+git clone https://github.com/MaximumWorf/hassio-nectar.git
+cd hassio-nectar/okin_bed_control
+
+# Edit docker-compose.yml - set your bed's MAC address
+nano docker-compose.yml  # Change BED_MAC_ADDRESS=XX:XX:XX:XX:XX:XX
+
+# Run
+docker-compose up -d
+```
+
+### Method 3: Manual Install
+
+```bash
+cd ~
+git clone https://github.com/MaximumWorf/hassio-nectar.git
+cd hassio-nectar/okin_bed_control
+pip3 install -e ".[server]"
+chmod +x install_server.sh
+./install_server.sh
+```
+
+See `REMOTE_SETUP.md` for detailed remote setup guide.
 
 ## 🔧 Development
 

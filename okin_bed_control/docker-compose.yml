@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  okin-bed-server:
+    build: .
+    container_name: okin-bed-server
+    restart: unless-stopped
+    network_mode: host  # Required for Bluetooth access
+    privileged: true     # Required for Bluetooth access
+    environment:
+      - BED_MAC_ADDRESS=XX:XX:XX:XX:XX:XX  # CHANGE THIS!
+    command: ["--mac", "${BED_MAC_ADDRESS}", "--host", "0.0.0.0", "--port", "8000"]
+    volumes:
+      - /var/run/dbus:/var/run/dbus  # D-Bus socket for Bluetooth
+    devices:
+      - /dev/bus/usb:/dev/bus/usb    # USB devices (for Bluetooth adapter)
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

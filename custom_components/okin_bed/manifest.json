@@ -1,0 +1,16 @@
+{
+  "domain": "okin_bed",
+  "name": "OKIN Adjustable Bed",
+  "version": "1.0.0",
+  "documentation": "https://github.com/MaximumWorf/hassio-nectar",
+  "issue_tracker": "https://github.com/MaximumWorf/hassio-nectar/issues",
+  "requirements": ["bleak>=0.20.0"],
+  "codeowners": ["@MaximumWorf"],
+  "iot_class": "local_push",
+  "config_flow": true,
+  "bluetooth": [
+    {
+      "connectable": true
+    }
+  ]
+}
