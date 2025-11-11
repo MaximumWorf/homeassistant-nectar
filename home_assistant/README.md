@@ -20,7 +20,7 @@ Home Assistant custom component for controlling OKIN adjustable beds via Bluetoo
 
 ### Manual Installation
 
-1. Copy the `custom_components/okin_bed` directory to your Home Assistant `custom_components` directory
+1. Copy the `okin_bed` directory from this repository to your Home Assistant `custom_components` directory
 2. Restart Home Assistant
 
 ## Configuration

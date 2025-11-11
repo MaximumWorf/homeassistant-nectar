@@ -58,7 +58,7 @@ Thumbs.db
 htmlcov/
 
 # Home Assistant
-home_assistant/custom_components/okin_bed/__pycache__/
+okin_bed/__pycache__/
 
 # Bluetooth captures
 *.btsnoop

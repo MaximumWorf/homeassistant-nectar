@@ -112,7 +112,7 @@ On your Home Assistant device (can be anywhere on the network).
 
 ```bash
 # Copy integration to Home Assistant
-cp -r ~/homeassistant-nectar/home_assistant/custom_components/okin_bed \
+cp -r ~/homeassistant-nectar/okin_bed \
   /config/custom_components/
 
 # Restart Home Assistant

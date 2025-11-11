@@ -148,7 +148,7 @@ bluetooth.uuid == 0x62741525
 
 ### Install
 ```bash
-cp -r home_assistant/custom_components/okin_bed \
+cp -r okin_bed \
     ~/.homeassistant/custom_components/
 ```
 

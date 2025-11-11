@@ -179,7 +179,7 @@ COMMAND LINE:
   $ okin-bed --mac XX:XX:XX:XX:XX:XX massage-wave 2
 
 HOME ASSISTANT:
-  1. Copy custom_components/okin_bed to HA config
+  1. Copy okin_bed to HA config/custom_components
   2. Restart Home Assistant
   3. Add integration via UI
 
