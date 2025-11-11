@@ -11,7 +11,7 @@ setup(
     description="Python library for controlling OKIN adjustable beds via Bluetooth LE",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/MaximumWorf/hassio-nectar",
+    url="https://github.com/MaximumWorf/homeassistant-nectar",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 3 - Alpha",

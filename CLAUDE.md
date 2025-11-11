@@ -242,7 +242,7 @@ For Home Assistant:
 
 This repository is configured with:
 - User: MaximumWorf
-- Remote: https://github.com/MaximumWorf/hassio-nectar.git
+- Remote: https://github.com/MaximumWorf/homeassistant-nectar.git
 - Branch: main
 
 ## Legal and Security

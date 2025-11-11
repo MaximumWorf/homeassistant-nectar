@@ -164,7 +164,7 @@ If you have a different OKIN bed model, the commands should work (they use a sta
 
 1. **Add Custom Repository:**
    - HACS → Integrations → ⋮ (menu) → Custom repositories
-   - Repository: `https://github.com/MaximumWorf/hassio-nectar`
+   - Repository: `https://github.com/MaximumWorf/homeassistant-nectar`
    - Category: Integration
    - Click Add
 
@@ -186,9 +186,9 @@ If you have a different OKIN bed model, the commands should work (they use a sta
 cd /config  # or ~/.homeassistant
 mkdir -p custom_components
 cd custom_components
-git clone https://github.com/MaximumWorf/hassio-nectar.git
-cp -r hassio-nectar/custom_components/okin_bed .
-rm -rf hassio-nectar
+git clone https://github.com/MaximumWorf/homeassistant-nectar.git
+cp -r homeassistant-nectar/custom_components/okin_bed .
+rm -rf homeassistant-nectar
 ```
 
 Then restart and configure as above.
@@ -213,7 +213,7 @@ Then restart and configure as above.
 ### Method 1: One-Liner Install (Easiest) ⭐
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/MaximumWorf/hassio-nectar/main/quick_install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/MaximumWorf/homeassistant-nectar/main/quick_install.sh | bash
 ```
 
 **For Split King:** Just run the same command twice!
@@ -230,8 +230,8 @@ This will:
 
 ```bash
 # Clone repo
-git clone https://github.com/MaximumWorf/hassio-nectar.git
-cd hassio-nectar/okin_bed_control
+git clone https://github.com/MaximumWorf/homeassistant-nectar.git
+cd homeassistant-nectar/okin_bed_control
 
 # Edit docker-compose.yml
 # - Set left bed MAC address (okin-bed-left service)
@@ -250,8 +250,8 @@ Docker will run TWO containers from ONE Raspberry Pi:
 
 ```bash
 cd ~
-git clone https://github.com/MaximumWorf/hassio-nectar.git
-cd hassio-nectar/okin_bed_control
+git clone https://github.com/MaximumWorf/homeassistant-nectar.git
+cd homeassistant-nectar/okin_bed_control
 pip3 install -e ".[server]"
 chmod +x install_server.sh
 ./install_server.sh  # Run once per bed

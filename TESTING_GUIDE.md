@@ -12,7 +12,7 @@ Now that you have captured BLE commands, it's time to safely test them on your b
 ## Find Your Bed's MAC Address
 
 ```bash
-cd ~/nectar/hassio-nectar-main/okin_bed_control
+cd ~/nectar/homeassistant-nectar-main/okin_bed_control
 python -m okin_bed.scanner
 ```
 
@@ -23,7 +23,7 @@ Note the MAC address (format: `XX:XX:XX:XX:XX:XX`)
 This script will walk you through testing all commands systematically:
 
 ```bash
-cd ~/nectar/hassio-nectar-main/okin_bed_control
+cd ~/nectar/homeassistant-nectar-main/okin_bed_control
 python3 examples/test_captured_commands.py XX:XX:XX:XX:XX:XX
 ```
 
@@ -47,7 +47,7 @@ python3 examples/test_captured_commands.py XX:XX:XX:XX:XX:XX
 For testing individual commands quickly:
 
 ```bash
-cd ~/nectar/hassio-nectar-main/okin_bed_control
+cd ~/nectar/homeassistant-nectar-main/okin_bed_control
 
 # Test STOP (should do nothing)
 python3 examples/quick_test.py XX:XX:XX:XX:XX:XX "5a 01 03 10 30 0f a5"

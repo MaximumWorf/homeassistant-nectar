@@ -42,8 +42,8 @@ This Raspberry Pi must be **close to the bed** (within Bluetooth range).
 ```bash
 # Clone repository
 cd ~
-git clone https://github.com/MaximumWorf/hassio-nectar.git
-cd hassio-nectar/okin_bed_control
+git clone https://github.com/MaximumWorf/homeassistant-nectar.git
+cd homeassistant-nectar/okin_bed_control
 
 # Install with server dependencies
 pip3 install --user -e ".[server]"
@@ -112,7 +112,7 @@ On your Home Assistant device (can be anywhere on the network).
 
 ```bash
 # Copy integration to Home Assistant
-cp -r ~/hassio-nectar/home_assistant/custom_components/okin_bed \
+cp -r ~/homeassistant-nectar/home_assistant/custom_components/okin_bed \
   /config/custom_components/
 
 # Restart Home Assistant
@@ -186,10 +186,10 @@ Single Pi running two API server instances on different ports - **super easy now
 **Setup:**
 ```bash
 # Run the installer once for each bed
-curl -fsSL https://raw.githubusercontent.com/MaximumWorf/hassio-nectar/main/quick_install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/MaximumWorf/homeassistant-nectar/main/quick_install.sh | bash
 # Enter left bed MAC, port 8000
 
-curl -fsSL https://raw.githubusercontent.com/MaximumWorf/hassio-nectar/main/quick_install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/MaximumWorf/homeassistant-nectar/main/quick_install.sh | bash
 # Script detects existing install, prompts for right bed MAC, port 8001
 ```
 
@@ -366,7 +366,7 @@ Replace `192.168.1.50` with your Home Assistant IP.
 
 **BLE Controller Pi:**
 ```bash
-cd ~/hassio-nectar/okin_bed_control
+cd ~/homeassistant-nectar/okin_bed_control
 pip3 install --user -e ".[server]"
 ./install_server.sh
 sudo systemctl start okin-bed-server

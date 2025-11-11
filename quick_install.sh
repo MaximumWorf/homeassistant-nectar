@@ -1,7 +1,7 @@
 #!/bin/bash
 # Quick install script for OKIN Bed BLE Controller
 # Supports multiple beds on a single Raspberry Pi (perfect for split king!)
-# Usage: curl -fsSL https://raw.githubusercontent.com/MaximumWorf/hassio-nectar/main/quick_install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/MaximumWorf/homeassistant-nectar/main/quick_install.sh | bash
 
 set -e
 
@@ -85,7 +85,7 @@ if [ -d "$INSTALL_DIR" ]; then
 else
     echo ""
     echo "Cloning repository..."
-    git clone https://github.com/MaximumWorf/hassio-nectar.git "$INSTALL_DIR"
+    git clone https://github.com/MaximumWorf/homeassistant-nectar.git "$INSTALL_DIR"
 fi
 
 # Install Python package with server dependencies (skip if already installed)
