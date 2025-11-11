@@ -131,33 +131,27 @@ PROJECT STRUCTURE:
     └── README.md
 
 ================================================================================
-NEXT STEPS REQUIRED:
+STATUS UPDATE:
 ================================================================================
 
-⚠️ IMPORTANT: The Python library has placeholder command bytes!
+✅ COMPLETE: Command bytes captured and tested!
 
-To complete the project:
+Testing completed on: Nectar Split King Luxe Adjustable Foundation
 
-1. CAPTURE REAL BLE COMMANDS (CRITICAL)
-   - Enable Android Bluetooth HCI snoop log
-   - Use OKIN app to send commands
-   - Capture packets with Wireshark
-   - Document actual command byte sequences
-   - See CAPTURE_GUIDE.md for detailed instructions
+WORKING FEATURES:
+1. ✅ Position controls (Head, Lumbar, Foot - Up/Down/Stop)
+2. ✅ Presets (Flat, Zero Gravity, Anti-Snore, Lounge/TV)
+3. ✅ Massage (On/Off, Slow Pulse Wave)
+4. ✅ Under-bed lighting (On/Off)
+5. ✅ Home Assistant integration (Direct + Remote modes)
+6. ✅ REST API server for remote control
 
-2. UPDATE COMMAND BYTES
-   - Update okin_bed/constants.py with real bytes
-   - Test each command carefully
+OPTIONAL FEATURES (not yet captured):
+- ASCENT preset
+- Additional massage wave patterns
+- Light brightness controls
 
-3. TEST THOROUGHLY
-   - Test all commands with real bed
-   - Verify safety and reliability
-   - Document any edge cases
-
-4. REFINE
-   - Add response handling if needed
-   - Implement position feedback if available
-   - Add error handling
+For other bed models, commands may need re-capture (see CAPTURE_GUIDE.md)
 
 ================================================================================
 USAGE EXAMPLES:
@@ -194,14 +188,15 @@ IMPORTANT NOTES:
 ================================================================================
 
 ✅ BLE UUIDs are confirmed and correct
-✅ Command list is complete and accurate
-✅ Python library structure is production-ready
-✅ Home Assistant integration framework is complete
+✅ Command bytes captured and tested (Nectar Split King Luxe)
+✅ Python library is production-ready
+✅ Home Assistant integration is fully functional
+✅ Remote BLE control via REST API supported
 
-⚠️ Command bytes are PLACEHOLDERS - must capture from real app
 ⚠️ Test carefully - this controls a physical bed
 ⚠️ Not affiliated with OKIN - reverse engineered
 ⚠️ Use at your own risk
+⚠️ Commands tested on Nectar bed - may vary on other OKIN models
 
 ================================================================================
 RESOURCES:

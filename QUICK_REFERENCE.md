@@ -168,16 +168,18 @@ Settings → Devices & Services → Add Integration → OKIN Bed
 |-------|----------|
 | Can't find bed | Check bed is on, Bluetooth enabled |
 | Connection fails | Power cycle bed, check MAC address |
-| Commands don't work | Need to capture real command bytes |
+| Commands don't work | Verify bed powered, no other device connected |
 | Permission denied | Add user to `bluetooth` group |
 
 ## Important Notes
 
-⚠️ **Command bytes are placeholders** - Must capture from real app
+✅ **Command bytes tested** - Captured and verified on Nectar Split King Luxe
 
 ⚠️ **Test safely** - Don't test with someone in bed
 
 ⚠️ **Not official** - Reverse engineered, use at own risk
+
+⚠️ **Other bed models** - Commands may vary, see CAPTURE_GUIDE.md
 
 ## Key Files
 

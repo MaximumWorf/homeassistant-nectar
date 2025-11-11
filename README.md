@@ -10,7 +10,7 @@ This project provides:
 - ✅ Python library for Raspberry Pi
 - ✅ Home Assistant custom integration
 - ✅ Command-line interface
-- ⚠️ Actual BLE command bytes need to be captured (see below)
+- ✅ **Captured and tested BLE command bytes** (Nectar Split King Luxe Adjustable Foundation)
 
 ## 📁 Project Structure
 
@@ -135,19 +135,28 @@ okin-bed --mac XX:XX:XX:XX:XX:XX zero-gravity
 okin-bed --mac XX:XX:XX:XX:XX:XX massage-on
 ```
 
-## ⚠️ Important: Next Steps Required
+## ✅ Command Bytes Status
 
-### The command bytes are placeholders!
+### **Captured and Tested!**
 
-The Python library has the structure in place, but the actual BLE command bytes need to be captured from the real app. See **`CAPTURE_GUIDE.md`** for detailed instructions.
+BLE command bytes have been **captured and verified** on a **Nectar Split King Luxe Adjustable Foundation**. All core functionality is working:
 
-**Quick capture method:**
+**Fully Tested Commands:**
+- ✅ Position controls (Head, Lumbar, Foot - Up/Down/Stop)
+- ✅ Presets (Flat, Zero Gravity, Anti-Snore, Lounge/TV)
+- ✅ Massage (On/Off, Slow Pulse Wave)
+- ✅ Under-bed lighting (On/Off)
 
-1. Enable Bluetooth HCI snoop log on Android
-2. Use the OKIN app to control the bed
-3. Pull the log: `adb pull /sdcard/btsnoop_hci.log`
-4. Analyze with Wireshark
-5. Update `okin_bed/constants.py` with real command bytes
+**Not Yet Captured** (optional features):
+- Ascent preset
+- Additional massage wave patterns
+- Light brightness controls
+
+See `CAPTURED_COMMANDS.md` for the full capture and testing log.
+
+### Testing on Other Bed Models
+
+If you have a different OKIN bed model, the commands should work (they use a standard OKIN protocol), but some commands may vary. See **`CAPTURE_GUIDE.md`** if you need to capture commands for your specific model.
 
 ## 📱 Home Assistant Installation
 
@@ -222,9 +231,10 @@ See `PROTOCOL_ANALYSIS.md` for complete details on:
 - Try rebooting the bed (power cycle)
 
 ### Commands don't work
-- **Expected!** The command bytes are placeholders
-- Follow `CAPTURE_GUIDE.md` to capture real commands
-- Update `constants.py` with captured bytes
+- Verify bed is powered on and connected
+- Check that no other device (phone app) is connected
+- Ensure you're using the correct MAC address
+- If using a different bed model, commands may need to be re-captured (see `CAPTURE_GUIDE.md`)
 
 ## 📄 Files Documentation
 

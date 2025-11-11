@@ -10,7 +10,7 @@ This is a reverse-engineered Bluetooth Low Energy (BLE) control system for OKIN 
 - Decompiled Android app analysis (`decompiled/`, `extracted/`)
 - Protocol documentation
 
-**Critical Status**: The BLE command bytes in `okin_bed_control/okin_bed/constants.py` are **placeholder values**. The actual byte sequences must be captured from real BLE traffic using the official app (see CAPTURE_GUIDE.md).
+**Status**: BLE command bytes in `okin_bed_control/okin_bed/constants.py` have been **captured and tested** on a Nectar Split King Luxe Adjustable Foundation. All core functionality (position controls, presets, massage, lighting) is confirmed working. Some optional commands still need capture (see constants.py for "NOT YET CAPTURED" markers).
 
 ## Project Architecture
 
@@ -30,7 +30,7 @@ The core library follows a clean async/await pattern using the `bleak` library:
      - OKIN Service: `62741523-52F9-8864-B1AB-3B3A8D65950B`
      - TX Characteristic: `62741525-52F9-8864-B1AB-3B3A8D65950B`
      - RX Characteristic: `62741625-52F9-8864-B1AB-3B3A8D65950B`
-   - Command byte placeholders in `Command` class
+   - Captured and tested command bytes in `Command` class
    - Enums for positions, massage waves, light states
 
 3. **Scanner** (`okin_bed_control/okin_bed/scanner.py`):
@@ -161,12 +161,12 @@ This is handled in `_discover_characteristics()` method.
 
 ### Command Byte Updates
 
-When actual command bytes are captured:
+Command bytes have been captured and tested for Nectar Split King Luxe:
 
-1. Update `okin_bed_control/okin_bed/constants.py`
-2. Replace placeholder `bytes([0xXX])` with actual captured sequences
-3. Commands may have structure like: `[HEADER] [COMMAND] [PARAM1] [PARAM2] [CHECKSUM]`
-4. Test each command individually before committing
+1. All core commands in `okin_bed_control/okin_bed/constants.py` are confirmed working
+2. Commands follow structure: `[0x5a] [0x01] [0x03] [0x10] [0x30] [COMMAND_BYTE] [0xa5]`
+3. Some optional commands still marked "NOT YET CAPTURED" (ASCENT, extra massage waves, brightness)
+4. If adding new commands: test individually, verify byte sequence, update constants.py
 
 ### Safety Considerations
 
