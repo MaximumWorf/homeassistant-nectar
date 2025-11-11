@@ -1,5 +1,6 @@
 #!/bin/bash
 # Quick install script for OKIN Bed BLE Controller
+# Supports multiple beds on a single Raspberry Pi (perfect for split king!)
 # Usage: curl -fsSL https://raw.githubusercontent.com/MaximumWorf/hassio-nectar/main/quick_install.sh | bash
 
 set -e
@@ -15,8 +16,35 @@ if [[ ! "$OSTYPE" == "linux"* ]]; then
     exit 1
 fi
 
+# Check for existing installations
+INSTALL_DIR="$HOME/okin-bed-control"
+EXISTING_SERVICES=$(systemctl list-units --all "okin-bed-server-*" --no-legend 2>/dev/null | wc -l)
+
+if [ $EXISTING_SERVICES -gt 0 ]; then
+    echo "Found $EXISTING_SERVICES existing bed(s) configured"
+    echo ""
+    systemctl list-units --all "okin-bed-server-*" --no-legend | awk '{print "  - " $1}'
+    echo ""
+    read -p "Add another bed? (y/n): " ADD_ANOTHER
+    if [[ ! "$ADD_ANOTHER" =~ ^[Yy]$ ]]; then
+        echo "Installation cancelled"
+        exit 0
+    fi
+    BED_NUM=$((EXISTING_SERVICES + 1))
+    DEFAULT_PORT=$((8000 + EXISTING_SERVICES))
+else
+    echo "This appears to be your first bed installation"
+    BED_NUM=1
+    DEFAULT_PORT=8000
+fi
+
+echo ""
+echo "Configuring Bed #$BED_NUM"
+echo "========================="
+
 # Get bed MAC address
-echo "Enter the Bluetooth MAC address of your OKIN bed:"
+echo ""
+echo "Enter the Bluetooth MAC address for Bed #$BED_NUM:"
 echo "(Format: XX:XX:XX:XX:XX:XX)"
 read -p "MAC Address: " BED_MAC
 
@@ -25,40 +53,54 @@ if [ -z "$BED_MAC" ]; then
     exit 1
 fi
 
-# Get optional friendly name
-read -p "Friendly name for this bed (default: 'OKIN Bed'): " BED_NAME
-BED_NAME=${BED_NAME:-"OKIN Bed"}
+# Get friendly name
+read -p "Friendly name (e.g., 'Left Bed', 'Right Bed'): " BED_NAME
+if [ -z "$BED_NAME" ]; then
+    BED_NAME="Bed $BED_NUM"
+fi
 
-# Install system dependencies
-echo ""
-echo "Installing system dependencies..."
-sudo apt-get update -qq
-sudo apt-get install -y python3 python3-pip python3-venv git bluez
+# Get port number
+read -p "API Port (default: $DEFAULT_PORT): " API_PORT
+API_PORT=${API_PORT:-$DEFAULT_PORT}
 
-# Clone or update repository
-INSTALL_DIR="$HOME/okin-bed-control"
-if [ -d "$INSTALL_DIR" ]; then
+# Install system dependencies (skip if already installed)
+if [ $BED_NUM -eq 1 ]; then
     echo ""
-    echo "Updating existing installation..."
-    cd "$INSTALL_DIR"
-    git pull
+    echo "Installing system dependencies..."
+    sudo apt-get update -qq
+    sudo apt-get install -y python3 python3-pip python3-venv git bluez
+fi
+
+# Clone or update repository (skip if already exists)
+if [ -d "$INSTALL_DIR" ]; then
+    if [ $BED_NUM -gt 1 ]; then
+        echo ""
+        echo "Using existing installation..."
+    else
+        echo ""
+        echo "Updating existing installation..."
+        cd "$INSTALL_DIR"
+        git pull
+    fi
 else
     echo ""
     echo "Cloning repository..."
     git clone https://github.com/MaximumWorf/hassio-nectar.git "$INSTALL_DIR"
-    cd "$INSTALL_DIR"
 fi
 
-# Install Python package with server dependencies
-echo ""
-echo "Installing Python package..."
-cd okin_bed_control
-pip3 install --user -e ".[server]"
+# Install Python package with server dependencies (skip if already installed)
+if [ $BED_NUM -eq 1 ] || ! command -v okin-bed-server &> /dev/null; then
+    echo ""
+    echo "Installing Python package..."
+    cd "$INSTALL_DIR/okin_bed_control"
+    pip3 install --user -e ".[server]"
+fi
 
-# Create systemd service
+# Create systemd service for this bed
 echo ""
-echo "Creating systemd service..."
-SERVICE_FILE="/tmp/okin-bed-server.service"
+echo "Creating systemd service for $BED_NAME..."
+SERVICE_NAME="okin-bed-server-$BED_NUM"
+SERVICE_FILE="/tmp/${SERVICE_NAME}.service"
 cat > $SERVICE_FILE << EOF
 [Unit]
 Description=OKIN Bed BLE API Server - $BED_NAME
@@ -69,7 +111,7 @@ Type=simple
 User=$USER
 WorkingDirectory=$HOME
 Environment="PATH=$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin"
-ExecStart=$HOME/.local/bin/okin-bed-server --mac $BED_MAC --host 0.0.0.0 --port 8000
+ExecStart=$HOME/.local/bin/okin-bed-server --mac $BED_MAC --host 0.0.0.0 --port $API_PORT
 Restart=on-failure
 RestartSec=10
 
@@ -77,28 +119,46 @@ RestartSec=10
 WantedBy=multi-user.target
 EOF
 
-sudo cp $SERVICE_FILE /etc/systemd/system/okin-bed-server.service
+sudo cp $SERVICE_FILE /etc/systemd/system/${SERVICE_NAME}.service
 sudo systemctl daemon-reload
-sudo systemctl enable okin-bed-server.service
+sudo systemctl enable ${SERVICE_NAME}.service
 
 echo ""
 echo "========================================="
 echo "Installation Complete!"
 echo "========================================="
 echo ""
-echo "Service: okin-bed-server"
-echo "Bed: $BED_NAME"
-echo "MAC: $BED_MAC"
-echo "API URL: http://$(hostname -I | awk '{print $1}'):8000"
+echo "Bed #$BED_NUM: $BED_NAME"
+echo "MAC Address: $BED_MAC"
+echo "API Port: $API_PORT"
+echo "Service: $SERVICE_NAME"
+echo "API URL: http://$(hostname -I | awk '{print $1}'):$API_PORT"
 echo ""
 echo "Commands:"
-echo "  Start:   sudo systemctl start okin-bed-server"
-echo "  Stop:    sudo systemctl stop okin-bed-server"
-echo "  Status:  sudo systemctl status okin-bed-server"
-echo "  Logs:    sudo journalctl -u okin-bed-server -f"
+echo "  Start:   sudo systemctl start $SERVICE_NAME"
+echo "  Stop:    sudo systemctl stop $SERVICE_NAME"
+echo "  Status:  sudo systemctl status $SERVICE_NAME"
+echo "  Logs:    sudo journalctl -u $SERVICE_NAME -f"
 echo ""
+
+# Show all configured beds
+if [ $BED_NUM -gt 1 ]; then
+    echo "All Configured Beds:"
+    echo "===================="
+    for i in $(seq 1 $BED_NUM); do
+        if systemctl list-units --all "okin-bed-server-$i.service" --no-legend 2>/dev/null | grep -q "okin-bed-server-$i"; then
+            PORT=$((8000 + i - 1))
+            echo "  Bed #$i: http://$(hostname -I | awk '{print $1}'):$PORT"
+        fi
+    done
+    echo ""
+fi
+
 echo "Next steps:"
-echo "1. Start the service: sudo systemctl start okin-bed-server"
-echo "2. Test: curl http://localhost:8000/health"
-echo "3. Add to Home Assistant using the API URL above"
+echo "1. Start the service: sudo systemctl start $SERVICE_NAME"
+echo "2. Test: curl http://localhost:$API_PORT/health"
+echo "3. Add to Home Assistant (Remote mode) using the API URL above"
+if [ $BED_NUM -eq 1 ]; then
+    echo "4. To add another bed (e.g., split king), run this script again!"
+fi
 echo ""

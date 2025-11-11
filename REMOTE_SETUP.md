@@ -177,29 +177,48 @@ The BLE Controller Pi exposes these HTTP endpoints:
 
 ## Multiple Beds (Split King)
 
-For split king setups with two bases:
+**Good news!** ONE Raspberry Pi can control BOTH beds in a split king setup! 🎉
 
-### Option 1: Two BLE Controller Pis (Recommended)
-- One Pi per bed (more reliable, each bed in BLE range)
-- Each runs its own API server on port 8000
-- Different IP addresses for each
+### Option 1: One BLE Controller Pi (Recommended) ⭐
 
-**Home Assistant Configuration:**
-1. Add first bed: Remote mode → `http://192.168.1.100:8000` → Name: "Left Bed"
-2. Add second bed: Remote mode → `http://192.168.1.101:8000` → Name: "Right Bed"
+Single Pi running two API server instances on different ports - **super easy now!**
 
-### Option 2: One BLE Controller Pi (If both beds in range)
-- Single Pi running two API server instances on different ports
-- Requires manual systemd service setup for second instance
-
-**Run second server manually:**
+**Setup:**
 ```bash
-okin-bed-server --mac XX:XX:XX:XX:XX:XX --port 8001
+# Run the installer once for each bed
+curl -fsSL https://raw.githubusercontent.com/MaximumWorf/hassio-nectar/main/quick_install.sh | bash
+# Enter left bed MAC, port 8000
+
+curl -fsSL https://raw.githubusercontent.com/MaximumWorf/hassio-nectar/main/quick_install.sh | bash
+# Script detects existing install, prompts for right bed MAC, port 8001
 ```
+
+The script automatically:
+- Detects existing installations
+- Creates separate systemd services (`okin-bed-server-1`, `okin-bed-server-2`)
+- Configures different ports (8000, 8001)
+- Shows all configured beds
 
 **Home Assistant Configuration:**
 1. Add first bed: Remote mode → `http://192.168.1.100:8000` → Name: "Left Bed"
 2. Add second bed: Remote mode → `http://192.168.1.100:8001` → Name: "Right Bed"
+
+**Benefits:**
+- ✅ Single device to manage
+- ✅ Lower cost (one Pi instead of two)
+- ✅ Simpler network setup
+- ✅ Works great if both beds are within BLE range (~30 feet)
+
+### Option 2: Two BLE Controller Pis (For Large Rooms)
+
+Only needed if beds are far apart (>30 feet) or in different rooms.
+
+- One Pi per bed (each runs on port 8000)
+- Different IP addresses for each Pi
+
+**Home Assistant Configuration:**
+1. Add first bed: Remote mode → `http://192.168.1.100:8000` → Name: "Left Bed"
+2. Add second bed: Remote mode → `http://192.168.1.101:8000` → Name: "Right Bed"
 
 ---
 

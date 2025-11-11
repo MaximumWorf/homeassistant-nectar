@@ -208,31 +208,43 @@ Then restart and configure as above.
 
 ## 🔧 BLE Controller Installation (Remote Mode)
 
+**Important:** ONE Raspberry Pi can control MULTIPLE beds! Perfect for split king setups. 🛏️+🛏️=1️⃣🥧
+
 ### Method 1: One-Liner Install (Easiest) ⭐
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/MaximumWorf/hassio-nectar/main/quick_install.sh | bash
 ```
 
-This will:
-- Install all dependencies
-- Clone the repository
-- Set up the API server as a systemd service
-- Configure autostart
+**For Split King:** Just run the same command twice!
+- First run: Configure left bed (port 8000)
+- Second run: Script detects existing install, adds right bed (port 8001)
 
-### Method 2: Docker
+This will:
+- Install all dependencies (first run only)
+- Set up API server(s) as systemd service(s)
+- Configure autostart
+- Each bed runs on its own port
+
+### Method 2: Docker (Split King Ready)
 
 ```bash
 # Clone repo
 git clone https://github.com/MaximumWorf/hassio-nectar.git
 cd hassio-nectar/okin_bed_control
 
-# Edit docker-compose.yml - set your bed's MAC address
-nano docker-compose.yml  # Change BED_MAC_ADDRESS=XX:XX:XX:XX:XX:XX
+# Edit docker-compose.yml
+# - Set left bed MAC address (okin-bed-left service)
+# - Uncomment and set right bed MAC address (okin-bed-right service)
+nano docker-compose.yml
 
-# Run
+# Run both beds
 docker-compose up -d
 ```
+
+Docker will run TWO containers from ONE Raspberry Pi:
+- Left bed: `http://RASPBERRY_PI_IP:8000`
+- Right bed: `http://RASPBERRY_PI_IP:8001`
 
 ### Method 3: Manual Install
 
@@ -242,7 +254,7 @@ git clone https://github.com/MaximumWorf/hassio-nectar.git
 cd hassio-nectar/okin_bed_control
 pip3 install -e ".[server]"
 chmod +x install_server.sh
-./install_server.sh
+./install_server.sh  # Run once per bed
 ```
 
 See `REMOTE_SETUP.md` for detailed remote setup guide.

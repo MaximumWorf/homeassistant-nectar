@@ -1,15 +1,15 @@
 version: '3.8'
 
 services:
-  okin-bed-server:
+  # Left Bed (or single bed)
+  okin-bed-left:
     build: .
-    container_name: okin-bed-server
+    container_name: okin-bed-left
     restart: unless-stopped
     network_mode: host  # Required for Bluetooth access
     privileged: true     # Required for Bluetooth access
-    environment:
-      - BED_MAC_ADDRESS=XX:XX:XX:XX:XX:XX  # CHANGE THIS!
-    command: ["--mac", "${BED_MAC_ADDRESS}", "--host", "0.0.0.0", "--port", "8000"]
+    command: ["--mac", "XX:XX:XX:XX:XX:XX", "--host", "0.0.0.0", "--port", "8000"]
+    # ☝️ CHANGE MAC ADDRESS ABOVE
     volumes:
       - /var/run/dbus:/var/run/dbus  # D-Bus socket for Bluetooth
     devices:
@@ -20,3 +20,30 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+
+  # Right Bed (for split king setups)
+  # Uncomment and configure for second bed
+  # okin-bed-right:
+  #   build: .
+  #   container_name: okin-bed-right
+  #   restart: unless-stopped
+  #   network_mode: host
+  #   privileged: true
+  #   command: ["--mac", "YY:YY:YY:YY:YY:YY", "--host", "0.0.0.0", "--port", "8001"]
+  #   # ☝️ CHANGE MAC ADDRESS ABOVE (different from left bed)
+  #   volumes:
+  #     - /var/run/dbus:/var/run/dbus
+  #   devices:
+  #     - /dev/bus/usb:/dev/bus/usb
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 10s
+
+# Single Raspberry Pi can control multiple beds!
+# Each bed gets its own container on a different port
+# In Home Assistant:
+#   - Left Bed:  http://RASPBERRY_PI_IP:8000
+#   - Right Bed: http://RASPBERRY_PI_IP:8001
