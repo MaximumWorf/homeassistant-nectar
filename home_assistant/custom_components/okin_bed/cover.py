@@ -12,7 +12,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN, CONF_MAC_ADDRESS
+from .const import DOMAIN, CONF_DEVICE_NAME, MOVEMENT_COMMAND_INTERVAL
+from .coordinator import OkinBedCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,19 +24,23 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up OKIN Bed cover entities."""
-    mac_address = config_entry.data[CONF_MAC_ADDRESS]
+    coordinator: OkinBedCoordinator = hass.data[DOMAIN][config_entry.entry_id]
+    device_name = config_entry.data[CONF_DEVICE_NAME]
 
     entities = [
-        OkinBedSection(mac_address, "head", "Head"),
-        OkinBedSection(mac_address, "lumbar", "Lumbar"),
-        OkinBedSection(mac_address, "foot", "Foot"),
+        OkinBedSection(coordinator, device_name, "head", "Head"),
+        OkinBedSection(coordinator, device_name, "lumbar", "Lumbar"),
+        OkinBedSection(coordinator, device_name, "foot", "Foot"),
     ]
 
     async_add_entities(entities)
 
 
 class OkinBedSection(CoverEntity):
-    """Representation of an OKIN bed section as a cover."""
+    """Representation of an OKIN bed section as a cover.
+
+    Press and hold behavior: Repeatedly sends commands while user holds button.
+    """
 
     _attr_device_class = CoverDeviceClass.AWNING
     _attr_supported_features = (
@@ -44,12 +49,20 @@ class OkinBedSection(CoverEntity):
         | CoverEntityFeature.STOP
     )
 
-    def __init__(self, mac_address: str, section: str, name: str) -> None:
+    def __init__(
+        self,
+        coordinator: OkinBedCoordinator,
+        device_name: str,
+        section: str,
+        section_name: str,
+    ) -> None:
         """Initialize the bed section cover."""
-        self._mac_address = mac_address
+        self.coordinator = coordinator
         self._section = section
-        self._attr_name = f"OKIN Bed {name}"
-        self._attr_unique_id = f"{mac_address}_{section}"
+        self._attr_name = f"{device_name} {section_name}"
+        self._attr_unique_id = f"{coordinator.mac_address}_{section}"
+        self._movement_id_up = f"{section}_up"
+        self._movement_id_down = f"{section}_down"
         self._is_opening = False
         self._is_closing = False
 
@@ -66,39 +79,53 @@ class OkinBedSection(CoverEntity):
     @property
     def is_closed(self) -> bool | None:
         """Return if the cover is closed."""
-        # Position tracking would require feedback from the bed
+        # OKIN beds don't provide position feedback
         return None
 
     async def async_open_cover(self, **kwargs: Any) -> None:
-        """Open the cover (raise section)."""
-        _LOGGER.info(f"Opening {self._section} section")
+        """Open the cover (raise section).
+
+        Starts continuous movement that repeats commands while held.
+        """
+        _LOGGER.info("Opening %s section (press and hold)", self._section)
         self._is_opening = True
         self._is_closing = False
-
-        # TODO: Implement actual BLE command
-        # For now this is a placeholder
-        # await self._send_command(f"{self._section}_up")
-
         self.async_write_ha_state()
+
+        # Start continuous movement
+        await self.coordinator.async_start_continuous_movement(
+            self._movement_id_up,
+            f"{self._section}_up",
+            MOVEMENT_COMMAND_INTERVAL,
+        )
 
     async def async_close_cover(self, **kwargs: Any) -> None:
-        """Close the cover (lower section)."""
-        _LOGGER.info(f"Closing {self._section} section")
+        """Close the cover (lower section).
+
+        Starts continuous movement that repeats commands while held.
+        """
+        _LOGGER.info("Closing %s section (press and hold)", self._section)
         self._is_closing = True
         self._is_opening = False
-
-        # TODO: Implement actual BLE command
-        # await self._send_command(f"{self._section}_down")
-
         self.async_write_ha_state()
+
+        # Start continuous movement
+        await self.coordinator.async_start_continuous_movement(
+            self._movement_id_down,
+            f"{self._section}_down",
+            MOVEMENT_COMMAND_INTERVAL,
+        )
 
     async def async_stop_cover(self, **kwargs: Any) -> None:
         """Stop the cover."""
-        _LOGGER.info(f"Stopping {self._section} section")
+        _LOGGER.info("Stopping %s section", self._section)
         self._is_opening = False
         self._is_closing = False
-
-        # TODO: Implement actual BLE command
-        # await self._send_command("stop")
-
         self.async_write_ha_state()
+
+        # Stop continuous movements for this section
+        await self.coordinator.async_stop_continuous_movement(self._movement_id_up)
+        await self.coordinator.async_stop_continuous_movement(self._movement_id_down)
+
+        # Send stop command to bed
+        await self.coordinator.async_send_command("stop")

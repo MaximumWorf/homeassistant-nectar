@@ -1,0 +1,15 @@
+[Unit]
+Description=OKIN Bed BLE API Server
+After=network.target bluetooth.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi
+Environment="PATH=/home/pi/.local/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=/home/pi/.local/bin/okin-bed-server --mac YOUR_BED_MAC_ADDRESS --host 0.0.0.0 --port 8000
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

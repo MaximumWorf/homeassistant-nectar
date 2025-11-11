@@ -36,10 +36,16 @@ setup(
             "black>=22.0",
             "flake8>=4.0",
         ],
+        "server": [
+            "fastapi>=0.104.0",
+            "uvicorn[standard]>=0.24.0",
+            "pydantic>=2.0.0",
+        ],
     },
     entry_points={
         "console_scripts": [
             "okin-bed=okin_bed.cli:main",
+            "okin-bed-server=okin_bed.api_server:main",
         ],
     },
 )

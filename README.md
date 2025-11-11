@@ -18,6 +18,7 @@ This project provides:
 .
 ├── PROTOCOL_ANALYSIS.md          # BLE protocol documentation
 ├── CAPTURE_GUIDE.md               # Guide for capturing actual commands
+├── REMOTE_SETUP.md                # Remote BLE setup guide
 ├── README.md                      # This file
 │
 ├── extracted/                     # Extracted XAPK contents
@@ -29,10 +30,12 @@ This project provides:
 │   │   ├── bed.py                 # Main OkinBed class
 │   │   ├── constants.py           # BLE UUIDs and commands
 │   │   ├── scanner.py             # Device scanner
-│   │   └── cli.py                 # Command-line interface
+│   │   ├── cli.py                 # Command-line interface
+│   │   └── api_server.py          # REST API server (remote mode)
 │   ├── examples/
 │   │   └── basic_control.py       # Usage examples
 │   ├── setup.py
+│   ├── install_server.sh          # API server installer
 │   └── README.md
 │
 └── home_assistant/                # Home Assistant integration
@@ -41,7 +44,12 @@ This project provides:
     │       ├── __init__.py
     │       ├── manifest.json
     │       ├── const.py
-    │       └── cover.py           # Bed section controls
+    │       ├── config_flow.py     # UI configuration
+    │       ├── coordinator.py     # Connection manager
+    │       ├── cover.py           # Bed section controls
+    │       ├── button.py          # Preset positions
+    │       ├── switch.py          # Massage control
+    │       └── light.py           # Under-bed lighting
     └── README.md
 ```
 
@@ -143,18 +151,33 @@ The Python library has the structure in place, but the actual BLE command bytes 
 
 ## 📱 Home Assistant Installation
 
-### HACS (Future)
-Once command bytes are captured and tested:
-1. Add custom repository
-2. Install via HACS
-3. Configure via UI
+### Connection Modes
+
+This integration supports two connection modes:
+
+**Direct Mode** (Default)
+- Home Assistant device has Bluetooth
+- HA connects directly to bed via BLE
+- Simplest setup
+
+**Remote Mode** (Recommended for split setups)
+- Home Assistant on different device from BLE controller
+- Dedicated Raspberry Pi near bed runs API server
+- HA sends commands over network
+- **See `REMOTE_SETUP.md` for detailed guide**
 
 ### Manual Installation
 ```bash
 cp -r home_assistant/custom_components/okin_bed ~/.homeassistant/custom_components/
 ```
 
-Then restart Home Assistant and add via Integrations.
+Then restart Home Assistant and add via Integrations:
+1. Settings → Devices & Services → Add Integration
+2. Search for "OKIN"
+3. Select your bed
+4. Choose connection mode (Direct or Remote)
+5. If Remote: Enter API server URL (e.g., `http://192.168.1.100:8000`)
+6. Name your bed
 
 ## 🔧 Development
 
