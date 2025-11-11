@@ -242,7 +242,6 @@ For Home Assistant:
 
 This repository is configured with:
 - User: MaximumWorf
-- Email: chad.veloso@gmail.com
 - Remote: https://github.com/MaximumWorf/hassio-nectar.git
 - Branch: main
 

@@ -217,7 +217,7 @@ cards:
 ## Support
 
 For issues and feature requests, please visit:
-https://github.com/yourusername/okin-bed-control/issues
+https://github.com/MaximumWorf/hassio-nectar/issues
 
 ## License
 

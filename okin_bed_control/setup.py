@@ -5,13 +5,13 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="okin-bed-control",
-    version="0.1.0",
-    author="Your Name",
-    author_email="your.email@example.com",
+    version="1.0.0",
+    author="MaximumWorf",
+    author_email="",
     description="Python library for controlling OKIN adjustable beds via Bluetooth LE",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/okin-bed-control",
+    url="https://github.com/MaximumWorf/hassio-nectar",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 3 - Alpha",
