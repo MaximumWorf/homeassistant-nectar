@@ -27,7 +27,7 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 # Debug logging to verify this version is loaded
-_LOGGER.warning("OKIN Bed config_flow.py loading - Version 2.0.6 - Using domain parameter")
+_LOGGER.warning("OKIN Bed config_flow.py loading - Version 2.0.7 - Manual entry support")
 
 
 async def _async_has_devices(hass: HomeAssistant) -> bool:
@@ -49,6 +49,7 @@ class OkinBedConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Initialize the config flow."""
         self._discovered_devices: dict[str, BluetoothServiceInfoBleak] = {}
         self._selected_device: BluetoothServiceInfoBleak | None = None
+        self._manual_mac: str | None = None
         self._connection_mode: str | None = None
         self._device_name: str | None = None
         self._api_url: str | None = None
@@ -56,10 +57,14 @@ class OkinBedConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Handle the initial step."""
-        errors = {}
+        """Handle the initial step - choose discovery or manual."""
+        if user_input is not None:
+            if user_input.get("setup_type") == "discovered":
+                return await self.async_step_discovered()
+            else:
+                return await self.async_step_manual()
 
-        # Discover OKIN beds
+        # Check if any devices discovered
         discovered = async_discovered_service_info(self.hass, connectable=True)
         self._discovered_devices = {
             device.address: device
@@ -70,8 +75,30 @@ class OkinBedConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             )
         }
 
-        if not self._discovered_devices:
-            return self.async_abort(reason="no_devices_found")
+        # Offer both options
+        setup_options = {
+            "manual": "Manual setup (for remote API or manual entry)",
+        }
+
+        if self._discovered_devices:
+            setup_options["discovered"] = f"Use discovered device ({len(self._discovered_devices)} found)"
+
+        data_schema = vol.Schema(
+            {
+                vol.Required("setup_type"): vol.In(setup_options),
+            }
+        )
+
+        return self.async_show_form(
+            step_id="user",
+            data_schema=data_schema,
+        )
+
+    async def async_step_discovered(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle discovered device selection."""
+        errors = {}
 
         if user_input is not None:
             mac_address = user_input[CONF_MAC_ADDRESS]
@@ -97,10 +124,53 @@ class OkinBedConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
         return self.async_show_form(
-            step_id="user",
+            step_id="discovered",
             data_schema=data_schema,
             errors=errors,
         )
+
+    async def async_step_manual(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle manual MAC address entry."""
+        errors = {}
+
+        if user_input is not None:
+            mac_address = user_input[CONF_MAC_ADDRESS].upper()
+
+            # Validate MAC address format
+            if not self._is_valid_mac(mac_address):
+                errors[CONF_MAC_ADDRESS] = "invalid_mac"
+            else:
+                # Check if already configured
+                await self.async_set_unique_id(mac_address)
+                self._abort_if_unique_id_configured()
+
+                # Store MAC and go to connection mode
+                self._selected_device = None  # No discovered device
+                self._manual_mac = mac_address
+                return await self.async_step_connection_mode()
+
+        data_schema = vol.Schema(
+            {
+                vol.Required(CONF_MAC_ADDRESS): cv.string,
+            }
+        )
+
+        return self.async_show_form(
+            step_id="manual",
+            data_schema=data_schema,
+            errors=errors,
+            description_placeholders={
+                "example": "AA:BB:CC:DD:EE:FF"
+            },
+        )
+
+    def _is_valid_mac(self, mac: str) -> bool:
+        """Validate MAC address format."""
+        import re
+        pattern = r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$'
+        return bool(re.match(pattern, mac))
 
     async def async_step_connection_mode(
         self, user_input: dict[str, Any] | None = None
@@ -155,12 +225,18 @@ class OkinBedConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             }
         )
 
+        # Build description based on whether we have a discovered device or manual MAC
+        if self._selected_device:
+            device_desc = f"{self._selected_device.name} ({self._selected_device.address})"
+        else:
+            device_desc = self._manual_mac or "Manual entry"
+
         return self.async_show_form(
             step_id="remote_config",
             data_schema=data_schema,
             errors=errors,
             description_placeholders={
-                "device": f"{self._selected_device.name} ({self._selected_device.address})"
+                "device": device_desc
             },
         )
 
@@ -173,9 +249,12 @@ class OkinBedConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             device_name = user_input[CONF_DEVICE_NAME]
 
+            # Get MAC address from either discovered device or manual entry
+            mac_address = self._selected_device.address if self._selected_device else self._manual_mac
+
             # Build config data
             data = {
-                CONF_MAC_ADDRESS: self._selected_device.address,
+                CONF_MAC_ADDRESS: mac_address,
                 CONF_DEVICE_NAME: device_name,
                 CONF_CONNECTION_MODE: self._connection_mode,
             }
@@ -191,7 +270,12 @@ class OkinBedConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             )
 
         # Default name suggestion
-        suggested_name = self._selected_device.name or "OKIN Bed"
+        if self._selected_device:
+            suggested_name = self._selected_device.name or "OKIN Bed"
+            device_desc = f"{self._selected_device.name} ({self._selected_device.address})"
+        else:
+            suggested_name = "OKIN Bed"
+            device_desc = self._manual_mac or "Manual entry"
 
         data_schema = vol.Schema(
             {
@@ -206,7 +290,7 @@ class OkinBedConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=data_schema,
             errors=errors,
             description_placeholders={
-                "device": f"{self._selected_device.name} ({self._selected_device.address})"
+                "device": device_desc
             },
         )
 

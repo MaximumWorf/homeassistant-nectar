@@ -2,10 +2,24 @@
   "config": {
     "step": {
       "user": {
-        "title": "Select OKIN Bed",
+        "title": "OKIN Bed Setup",
+        "description": "Choose how to add your OKIN adjustable bed",
+        "data": {
+          "setup_type": "Setup Type"
+        }
+      },
+      "discovered": {
+        "title": "Select Discovered Bed",
         "description": "Select the OKIN adjustable bed to add",
         "data": {
           "mac_address": "Bed Device"
+        }
+      },
+      "manual": {
+        "title": "Manual Setup",
+        "description": "Enter your bed's Bluetooth MAC address (e.g., {example}). You can find this by scanning for Bluetooth devices near your bed.",
+        "data": {
+          "mac_address": "MAC Address"
         }
       },
       "connection_mode": {
@@ -36,6 +50,7 @@
     },
     "error": {
       "cannot_connect": "Failed to connect to the bed",
+      "invalid_mac": "Invalid MAC address format. Use format: AA:BB:CC:DD:EE:FF",
       "unknown": "Unexpected error"
     },
     "abort": {
