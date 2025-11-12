@@ -25,7 +25,7 @@ if [ $EXISTING_SERVICES -gt 0 ]; then
     echo ""
     systemctl list-units --all "okin-bed-server-*" --no-legend | awk '{print "  - " $1}'
     echo ""
-    read -p "Add another bed? (y/n): " ADD_ANOTHER
+    read -p "Add another bed? (y/n): " ADD_ANOTHER </dev/tty
     if [[ ! "$ADD_ANOTHER" =~ ^[Yy]$ ]]; then
         echo "Installation cancelled"
         exit 0
@@ -46,7 +46,7 @@ echo "========================="
 echo ""
 echo "Enter the Bluetooth MAC address for Bed #$BED_NUM:"
 echo "(Format: XX:XX:XX:XX:XX:XX)"
-read -p "MAC Address: " BED_MAC
+read -p "MAC Address: " BED_MAC </dev/tty
 
 if [ -z "$BED_MAC" ]; then
     echo "ERROR: MAC address is required"
@@ -54,13 +54,13 @@ if [ -z "$BED_MAC" ]; then
 fi
 
 # Get friendly name
-read -p "Friendly name (e.g., 'Left Bed', 'Right Bed'): " BED_NAME
+read -p "Friendly name (e.g., 'Left Bed', 'Right Bed'): " BED_NAME </dev/tty
 if [ -z "$BED_NAME" ]; then
     BED_NAME="Bed $BED_NUM"
 fi
 
 # Get port number
-read -p "API Port (default: $DEFAULT_PORT): " API_PORT
+read -p "API Port (default: $DEFAULT_PORT): " API_PORT </dev/tty
 API_PORT=${API_PORT:-$DEFAULT_PORT}
 
 # Install system dependencies (skip if already installed)
