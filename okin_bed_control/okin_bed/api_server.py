@@ -69,7 +69,7 @@ async def lifespan(app: FastAPI):
     if bed_instances:
         logger.info(f"Disconnecting from {len(bed_instances)} bed(s)...")
         for mac, bed in bed_instances.items():
-            if bed.is_connected:
+            if bed.client and bed.client.is_connected:
                 logger.info(f"Disconnecting from bed {mac}")
                 await bed.disconnect()
     logger.info("OKIN Bed API Server stopped")
@@ -119,7 +119,7 @@ async def get_bed(mac_address: str) -> OkinBed:
 async def root():
     """Root endpoint with API information."""
     connected_beds = {
-        mac: bed.is_connected
+        mac: (bed.client and bed.client.is_connected)
         for mac, bed in bed_instances.items()
     }
     return {
@@ -137,7 +137,7 @@ async def health():
     return {
         "status": "healthy",
         "total_beds": len(bed_instances),
-        "connected_beds": sum(1 for bed in bed_instances.values() if bed.is_connected),
+        "connected_beds": sum(1 for bed in bed_instances.values() if bed.client and bed.client.is_connected),
     }
 
 
@@ -183,7 +183,7 @@ async def disconnect(mac: str = Query(..., description="Bluetooth MAC address of
 
     if mac_normalized in bed_instances:
         bed = bed_instances[mac_normalized]
-        if bed.is_connected:
+        if bed.client and bed.client.is_connected:
             await bed.disconnect()
             return {
                 "success": True,
