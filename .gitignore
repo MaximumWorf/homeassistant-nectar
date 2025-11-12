@@ -18,6 +18,8 @@ eggs/
 .eggs/
 lib/
 lib64/
+# But include the bundled library in the integration
+!custom_components/okin_bed/lib/
 parts/
 sdist/
 var/
