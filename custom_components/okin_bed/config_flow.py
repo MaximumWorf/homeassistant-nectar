@@ -37,10 +37,11 @@ async def _async_has_devices(hass: HomeAssistant) -> bool:
     )
 
 
-class OkinBedConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class OkinBedConfigFlow(config_entries.ConfigFlow):
     """Handle a config flow for OKIN Bed."""
 
     VERSION = 1
+    DOMAIN = DOMAIN
 
     def __init__(self) -> None:
         """Initialize the config flow."""
