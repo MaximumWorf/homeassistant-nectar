@@ -104,7 +104,13 @@ async def get_bed(mac_address: str) -> OkinBed:
     if not bed.client or not bed.client.is_connected:
         try:
             logger.info(f"Connecting to bed {mac}")
-            await bed.connect()
+            connected = await bed.connect()
+            if not connected:
+                logger.error(f"Failed to connect to bed {mac}")
+                raise HTTPException(
+                    status_code=503,
+                    detail=f"Failed to connect to bed {mac}. Check bed is powered on and in range."
+                )
         except Exception as e:
             logger.error(f"Failed to connect to bed {mac}: {e}")
             raise HTTPException(
