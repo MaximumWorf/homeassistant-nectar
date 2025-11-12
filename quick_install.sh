@@ -57,11 +57,18 @@ else
     git clone https://github.com/MaximumWorf/homeassistant-nectar.git "$INSTALL_DIR"
 fi
 
-# Install Python package with server dependencies
+# Create virtual environment and install Python package
 echo ""
-echo "Installing Python package..."
+echo "Setting up Python virtual environment..."
+VENV_DIR="$HOME/.okin-bed-venv"
+
+if [ ! -d "$VENV_DIR" ]; then
+    python3 -m venv "$VENV_DIR"
+fi
+
+echo "Installing Python package with server dependencies..."
 cd "$INSTALL_DIR/okin_bed_control"
-pip3 install --user -e ".[server]"
+"$VENV_DIR/bin/pip" install -e ".[server]"
 
 # Create single systemd service
 echo ""
@@ -76,8 +83,8 @@ After=network.target bluetooth.target
 Type=simple
 User=USER_PLACEHOLDER
 WorkingDirectory=HOME_PLACEHOLDER
-Environment="PATH=HOME_PLACEHOLDER/.local/bin:/usr/local/bin:/usr/bin:/bin"
-ExecStart=HOME_PLACEHOLDER/.local/bin/okin-bed-server --host 0.0.0.0 --port 8000
+Environment="PATH=VENV_PLACEHOLDER/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=VENV_PLACEHOLDER/bin/okin-bed-server --host 0.0.0.0 --port 8000
 Restart=on-failure
 RestartSec=10
 
@@ -88,6 +95,7 @@ EOF
 # Replace placeholders
 sed -i "s|USER_PLACEHOLDER|$USER|g" $SERVICE_FILE
 sed -i "s|HOME_PLACEHOLDER|$HOME|g" $SERVICE_FILE
+sed -i "s|VENV_PLACEHOLDER|$VENV_DIR|g" $SERVICE_FILE
 
 sudo cp $SERVICE_FILE /etc/systemd/system/${SERVICE_NAME}.service
 sudo systemctl daemon-reload
