@@ -18,7 +18,7 @@ from .coordinator import OkinBedCoordinator
 _LOGGER = logging.getLogger(__name__)
 
 # Version check for debugging
-_LOGGER.warning("OKIN Bed Integration Loading - Version 2.0.3")
+_LOGGER.warning("OKIN Bed Integration Loading - Version 2.0.5")
 
 PLATFORMS: list[Platform] = [
     Platform.COVER,
