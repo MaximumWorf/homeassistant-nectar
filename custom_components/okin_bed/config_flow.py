@@ -27,7 +27,7 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 # Debug logging to verify this version is loaded
-_LOGGER.warning("OKIN Bed config_flow.py loading - Version 2.0.5 - DOMAIN='okin_bed'")
+_LOGGER.warning("OKIN Bed config_flow.py loading - Version 2.0.6 - Using domain parameter")
 
 
 async def _async_has_devices(hass: HomeAssistant) -> bool:

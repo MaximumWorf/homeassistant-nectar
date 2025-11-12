@@ -1,7 +1,7 @@
 {
   "domain": "okin_bed",
   "name": "OKIN Adjustable Bed",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "documentation": "https://github.com/MaximumWorf/homeassistant-nectar",
   "issue_tracker": "https://github.com/MaximumWorf/homeassistant-nectar/issues",
   "requirements": ["bleak>=0.20.0"],
