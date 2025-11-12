@@ -8,7 +8,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from okin_bed import OkinBed
+from .lib.bed import OkinBed
 
 from .const import DOMAIN, CONF_MAC_ADDRESS, MODE_DIRECT, MODE_REMOTE
 
