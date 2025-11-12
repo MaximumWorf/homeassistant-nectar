@@ -37,35 +37,24 @@ This guide explains how to set up OKIN bed control when **Home Assistant and the
 
 This Raspberry Pi must be **close to the bed** (within Bluetooth range).
 
-### 1.1 Install Python Library
+### 1.1 Quick Install (Recommended)
+
+Single command installs everything:
 
 ```bash
-# Clone repository
-cd ~
-git clone https://github.com/MaximumWorf/homeassistant-nectar.git
-cd homeassistant-nectar/okin_bed_control
-
-# Install with server dependencies
-pip3 install --user -e ".[server]"
-```
-
-### 1.2 Configure and Install Service
-
-```bash
-# Make installation script executable
-chmod +x install_server.sh
-
-# Run installer (will prompt for bed MAC address)
-./install_server.sh
+curl -fsSL https://raw.githubusercontent.com/MaximumWorf/homeassistant-nectar/main/quick_install.sh | bash
 ```
 
 The installer will:
-- Install the Python package with server dependencies (FastAPI, uvicorn)
-- Prompt you for your bed's Bluetooth MAC address
-- Create and enable systemd service
-- Configure autostart on boot
+- Install system dependencies (Python, Bluetooth, etc.)
+- Clone repository and install Python package
+- Create single systemd service (supports unlimited beds)
+- Enable auto-start on boot
+- Display your Pi's IP address and next steps
 
-### 1.3 Start the Server
+**No MAC address needed!** The v2.0.0 API server accepts all beds via query parameters.
+
+### 1.2 Start the Server
 
 ```bash
 # Start the service
@@ -78,7 +67,7 @@ sudo systemctl status okin-bed-server
 sudo journalctl -u okin-bed-server -f
 ```
 
-### 1.4 Find Server IP Address
+### 1.3 Find Server IP Address
 
 ```bash
 # Get the IP address of this Pi
@@ -87,7 +76,9 @@ hostname -I
 
 Note this IP address (e.g., `192.168.1.100`) - you'll need it for Home Assistant.
 
-### 1.5 Test API Server
+**Note:** The example IP `192.168.1.100` is a placeholder. Use your actual Pi's IP address shown by the command above.
+
+### 1.4 Test API Server
 
 ```bash
 # Test health endpoint

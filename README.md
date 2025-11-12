@@ -210,51 +210,51 @@ Then restart and configure as above.
 
 **Important:** ONE Raspberry Pi can control MULTIPLE beds! Perfect for split king setups. 🛏️+🛏️=1️⃣🥧
 
-### Method 1: One-Liner Install (Easiest) ⭐
+### One-Liner Install (Recommended) ⭐
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/MaximumWorf/homeassistant-nectar/main/quick_install.sh | bash
 ```
 
-**For Split King:** Just run the same command twice!
-- First run: Configure left bed (port 8000)
-- Second run: Script detects existing install, adds right bed (port 8001)
+**This single command:**
+- Installs all dependencies (Python, Bluetooth, etc.)
+- Clones repository and installs Python package
+- Creates single systemd service on port 8000
+- Configures autostart on boot
+- **Supports unlimited beds automatically!** (v2.0.0)
 
-This will:
-- Install all dependencies (first run only)
-- Set up API server(s) as systemd service(s)
-- Configure autostart
-- Each bed runs on its own port
+**No MAC address needed during install!** The v2.0.0 API server accepts all beds via query parameters.
 
-### Method 2: Docker (Split King Ready)
+**For Split King:**
+- Same installation, same API URL (e.g., `http://192.168.1.100:8000`)
+- Configure both beds in Home Assistant with different MAC addresses
+- Single server instance handles both beds!
+
+**Note:** Replace `192.168.1.100` with your actual Raspberry Pi's IP address (shown by installer or use `hostname -I`).
+
+### Alternative: Docker (Single Container)
 
 ```bash
 # Clone repo
 git clone https://github.com/MaximumWorf/homeassistant-nectar.git
 cd homeassistant-nectar/okin_bed_control
 
-# Edit docker-compose.yml
-# - Set left bed MAC address (okin-bed-left service)
-# - Uncomment and set right bed MAC address (okin-bed-right service)
-nano docker-compose.yml
-
-# Run both beds
+# Run single container (handles all beds)
 docker-compose up -d
 ```
 
-Docker will run TWO containers from ONE Raspberry Pi:
-- Left bed: `http://RASPBERRY_PI_IP:8000`
-- Right bed: `http://RASPBERRY_PI_IP:8001`
+Single Docker container runs on port 8000 and supports unlimited beds via MAC query parameters.
 
-### Method 3: Manual Install
+### Alternative: Manual Install
 
 ```bash
 cd ~
 git clone https://github.com/MaximumWorf/homeassistant-nectar.git
 cd homeassistant-nectar/okin_bed_control
 pip3 install -e ".[server]"
-chmod +x install_server.sh
-./install_server.sh  # Run once per bed
+
+# Start server manually
+okin-bed-server --host 0.0.0.0 --port 8000
 ```
 
 See `REMOTE_SETUP.md` for detailed remote setup guide.
