@@ -87,7 +87,7 @@ okin-bed --mac XX:XX:XX:XX:XX:XX head-up
 
 ```bash
 # Copy integration to HA custom_components
-cp -r okin_bed ~/.homeassistant/custom_components/
+cp -r custom_components/okin_bed ~/.homeassistant/custom_components/
 
 # Restart Home Assistant
 systemctl restart home-assistant@homeassistant
@@ -211,7 +211,8 @@ For Home Assistant:
 ### Primary Development Files
 - `okin_bed_control/okin_bed/bed.py` - Main controller class
 - `okin_bed_control/okin_bed/constants.py` - **UPDATE THIS with captured command bytes**
-- `okin_bed/cover.py` - HA cover entities
+- `custom_components/okin_bed/cover.py` - HA cover entities
+- `custom_components/okin_bed/coordinator.py` - HA coordinator for BLE and remote API
 
 ### Documentation
 - `PROTOCOL_ANALYSIS.md` - Confirmed BLE protocol details

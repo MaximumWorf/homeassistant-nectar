@@ -1,7 +1,7 @@
 {
   "name": "OKIN Adjustable Bed Control",
   "integration": true,
-  "content_in_root": true,
+  "content_in_root": false,
   "render_readme": true,
   "homeassistant": "2023.1.0",
   "country": ["US"],

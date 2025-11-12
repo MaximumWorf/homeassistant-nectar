@@ -187,7 +187,7 @@ cd /config  # or ~/.homeassistant
 mkdir -p custom_components
 cd custom_components
 git clone https://github.com/MaximumWorf/homeassistant-nectar.git
-cp -r homeassistant-nectar/okin_bed .
+cp -r homeassistant-nectar/custom_components/okin_bed .
 rm -rf homeassistant-nectar
 ```
 

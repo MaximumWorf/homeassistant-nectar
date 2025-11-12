@@ -122,11 +122,12 @@ class OkinBedCoordinator(DataUpdateCoordinator):
                     _LOGGER.error("Unknown command for remote mode: %s", command_name)
                     return False
 
-                # Send HTTP POST request
+                # Send HTTP POST request with MAC address query parameter
                 session = async_get_clientsession(self.hass)
-                async with session.post(f"{self.api_url}{endpoint}") as resp:
+                url = f"{self.api_url}{endpoint}?mac={self.mac_address}"
+                async with session.post(url) as resp:
                     if resp.status == 200:
-                        _LOGGER.debug("Sent remote command: %s", command_name)
+                        _LOGGER.debug("Sent remote command: %s to %s", command_name, self.mac_address)
                         return True
                     else:
                         _LOGGER.error("Remote command failed: %s (status %s)", command_name, resp.status)

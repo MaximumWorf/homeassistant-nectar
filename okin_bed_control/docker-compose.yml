@@ -1,15 +1,15 @@
 version: '3.8'
 
 services:
-  # Left Bed (or single bed)
-  okin-bed-left:
+  # OKIN Bed API Server - Multi-bed support
+  okin-bed:
     build: .
-    container_name: okin-bed-left
+    container_name: okin-bed
     restart: unless-stopped
     network_mode: host  # Required for Bluetooth access
     privileged: true     # Required for Bluetooth access
-    command: ["--mac", "XX:XX:XX:XX:XX:XX", "--host", "0.0.0.0", "--port", "8000"]
-    # ☝️ CHANGE MAC ADDRESS ABOVE
+    command: ["--host", "0.0.0.0", "--port", "8000"]
+    # No --mac needed! MAC addresses provided via query parameters
     volumes:
       - /var/run/dbus:/var/run/dbus  # D-Bus socket for Bluetooth
     devices:
@@ -21,29 +21,11 @@ services:
       retries: 3
       start_period: 10s
 
-  # Right Bed (for split king setups)
-  # Uncomment and configure for second bed
-  # okin-bed-right:
-  #   build: .
-  #   container_name: okin-bed-right
-  #   restart: unless-stopped
-  #   network_mode: host
-  #   privileged: true
-  #   command: ["--mac", "YY:YY:YY:YY:YY:YY", "--host", "0.0.0.0", "--port", "8001"]
-  #   # ☝️ CHANGE MAC ADDRESS ABOVE (different from left bed)
-  #   volumes:
-  #     - /var/run/dbus:/var/run/dbus
-  #   devices:
-  #     - /dev/bus/usb:/dev/bus/usb
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 10s
-
-# Single Raspberry Pi can control multiple beds!
-# Each bed gets its own container on a different port
-# In Home Assistant:
-#   - Left Bed:  http://RASPBERRY_PI_IP:8000
-#   - Right Bed: http://RASPBERRY_PI_IP:8001
+# Single container can now control unlimited beds!
+# MAC addresses are provided via query parameter on each request
+#
+# In Home Assistant (for split king with 2 beds):
+#   - Left Bed:  Configure with MAC XX:XX:XX:XX:XX:XX, API URL http://RASPBERRY_PI_IP:8000
+#   - Right Bed: Configure with MAC YY:YY:YY:YY:YY:YY, API URL http://RASPBERRY_PI_IP:8000
+#
+# Same API server (port 8000) for all beds - they're distinguished by MAC address!

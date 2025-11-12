@@ -93,11 +93,12 @@ Note this IP address (e.g., `192.168.1.100`) - you'll need it for Home Assistant
 # Test health endpoint
 curl http://localhost:8000/health
 
-# Expected response:
-# {"status":"healthy","bed_connected":true}
+# Expected response (before any beds connect):
+# {"status":"healthy","total_beds":0,"connected_beds":0}
 
-# Test a command (flat position)
-curl -X POST http://localhost:8000/preset/flat
+# Test a command (flat position) - requires MAC address as query parameter
+curl -X POST "http://localhost:8000/preset/flat?mac=XX:XX:XX:XX:XX:XX"
+# Replace XX:XX:XX:XX:XX:XX with your bed's MAC address
 ```
 
 If the bed responds, the server is working correctly!
@@ -112,7 +113,7 @@ On your Home Assistant device (can be anywhere on the network).
 
 ```bash
 # Copy integration to Home Assistant
-cp -r ~/homeassistant-nectar/okin_bed \
+cp -r ~/homeassistant-nectar/custom_components/okin_bed \
   /config/custom_components/
 
 # Restart Home Assistant
@@ -141,75 +142,100 @@ INFO Connected to remote OKIN bed API: http://192.168.1.100:8000
 
 ## API Endpoints Reference
 
-The BLE Controller Pi exposes these HTTP endpoints:
+The BLE Controller Pi exposes these HTTP endpoints. **All command endpoints require a `mac` query parameter** to specify which bed to control.
 
 ### Position Controls (Continuous)
-- `POST /head/up` - Raise head (single increment)
-- `POST /head/down` - Lower head
-- `POST /lumbar/up` - Raise lumbar
-- `POST /lumbar/down` - Lower lumbar
-- `POST /foot/up` - Raise foot
-- `POST /foot/down` - Lower foot
-- `POST /stop` - Stop all movement
+- `POST /head/up?mac=XX:XX:XX:XX:XX:XX` - Raise head (single increment)
+- `POST /head/down?mac=XX:XX:XX:XX:XX:XX` - Lower head
+- `POST /lumbar/up?mac=XX:XX:XX:XX:XX:XX` - Raise lumbar
+- `POST /lumbar/down?mac=XX:XX:XX:XX:XX:XX` - Lower lumbar
+- `POST /foot/up?mac=XX:XX:XX:XX:XX:XX` - Raise foot
+- `POST /foot/down?mac=XX:XX:XX:XX:XX:XX` - Lower foot
+- `POST /stop?mac=XX:XX:XX:XX:XX:XX` - Stop all movement
 
 ### Presets (One-Time)
-- `POST /preset/flat` - Flat position
-- `POST /preset/zero-gravity` - Zero gravity position
-- `POST /preset/anti-snore` - Anti-snore position
-- `POST /preset/tv` - TV viewing position
-- `POST /preset/lounge` - Lounge position
+- `POST /preset/flat?mac=XX:XX:XX:XX:XX:XX` - Flat position
+- `POST /preset/zero-gravity?mac=XX:XX:XX:XX:XX:XX` - Zero gravity position
+- `POST /preset/anti-snore?mac=XX:XX:XX:XX:XX:XX` - Anti-snore position
+- `POST /preset/tv?mac=XX:XX:XX:XX:XX:XX` - TV viewing position
+- `POST /preset/lounge?mac=XX:XX:XX:XX:XX:XX` - Lounge position
 
 ### Massage
-- `POST /massage/on` - Turn massage on
-- `POST /massage/off` - Turn massage off
+- `POST /massage/on?mac=XX:XX:XX:XX:XX:XX` - Turn massage on
+- `POST /massage/off?mac=XX:XX:XX:XX:XX:XX` - Turn massage off
 
 ### Lighting
-- `POST /light/on` - Turn under-bed light on
-- `POST /light/off` - Turn under-bed light off
-- `POST /light/toggle` - Toggle light
+- `POST /light/on?mac=XX:XX:XX:XX:XX:XX` - Turn under-bed light on
+- `POST /light/off?mac=XX:XX:XX:XX:XX:XX` - Turn under-bed light off
+- `POST /light/toggle?mac=XX:XX:XX:XX:XX:XX` - Toggle light
 
 ### System
-- `GET /` - API information
-- `GET /health` - Health check
-- `POST /config` - Configure bed MAC address
+- `GET /` - API information (shows all connected beds)
+- `GET /health` - Health check (shows total beds and connected count)
+- `POST /config` - Pre-configure bed MAC address (optional, beds auto-configure on first command)
+- `POST /connect?mac=XX:XX:XX:XX:XX:XX` - Manually connect to specific bed
+- `POST /disconnect?mac=XX:XX:XX:XX:XX:XX` - Disconnect from specific bed
 
 ---
 
 ## Multiple Beds (Split King)
 
-**Good news!** ONE Raspberry Pi can control BOTH beds in a split king setup! 🎉
+**Great news!** ONE Raspberry Pi with ONE API server instance can control ALL beds! 🎉
 
-### Option 1: One BLE Controller Pi (Recommended) ⭐
+### Single API Server, Multiple Beds (Recommended) ⭐
 
-Single Pi running two API server instances on different ports - **super easy now!**
+The API server now supports unlimited beds through a single instance. Each bed is identified by its MAC address in the API request.
 
 **Setup:**
 ```bash
-# Run the installer once for each bed
-curl -fsSL https://raw.githubusercontent.com/MaximumWorf/homeassistant-nectar/main/quick_install.sh | bash
-# Enter left bed MAC, port 8000
-
-curl -fsSL https://raw.githubusercontent.com/MaximumWorf/homeassistant-nectar/main/quick_install.sh | bash
-# Script detects existing install, prompts for right bed MAC, port 8001
+# Install the API server once (no MAC address needed)
+cd ~/homeassistant-nectar/okin_bed_control
+pip3 install --user -e ".[server]"
+./install_server.sh
+# Just press Enter when prompted for MAC (or provide one for pre-configuration)
 ```
 
-The script automatically:
-- Detects existing installations
-- Creates separate systemd services (`okin-bed-server-1`, `okin-bed-server-2`)
-- Configures different ports (8000, 8001)
-- Shows all configured beds
+The server runs on port 8000 and handles all beds dynamically.
 
 **Home Assistant Configuration:**
-1. Add first bed: Remote mode → `http://192.168.1.100:8000` → Name: "Left Bed"
-2. Add second bed: Remote mode → `http://192.168.1.100:8001` → Name: "Right Bed"
+1. Add first bed:
+   - Connection mode: Remote (API server)
+   - API URL: `http://192.168.1.100:8000`
+   - MAC address: `XX:XX:XX:XX:XX:XX` (left bed MAC)
+   - Name: "Left Bed"
+
+2. Add second bed:
+   - Connection mode: Remote (API server)
+   - API URL: `http://192.168.1.100:8000` (same URL!)
+   - MAC address: `YY:YY:YY:YY:YY:YY` (right bed MAC)
+   - Name: "Right Bed"
+
+**How it works:**
+- Both beds use the same API URL (port 8000)
+- Home Assistant automatically appends `?mac=XX:XX:XX:XX:XX:XX` to each request
+- The server maintains separate BLE connections for each MAC address
+- No need for multiple containers or ports!
 
 **Benefits:**
-- ✅ Single device to manage
-- ✅ Lower cost (one Pi instead of two)
-- ✅ Simpler network setup
-- ✅ Works great if both beds are within BLE range (~30 feet)
+- ✅ Single server instance for all beds
+- ✅ No port configuration needed
+- ✅ Add/remove beds without restarting server
+- ✅ Unlimited bed support (within BLE range)
+- ✅ Simpler deployment and maintenance
 
-### Option 2: Two BLE Controller Pis (For Large Rooms)
+### Alternative: Docker Compose (Also Single Instance)
+
+If using Docker:
+
+```bash
+# docker-compose.yml already configured for multi-bed support
+cd ~/homeassistant-nectar/okin_bed_control
+docker-compose up -d
+```
+
+Single container on port 8000 handles all beds. Same Home Assistant configuration as above.
+
+### Legacy: Two BLE Controller Pis (For Large Rooms)
 
 Only needed if beds are far apart (>30 feet) or in different rooms.
 
@@ -285,8 +311,11 @@ Watch logs while sending commands from Home Assistant.
 
 **Reconnect manually:**
 ```bash
-curl -X POST http://192.168.1.100:8000/disconnect
-curl -X POST http://192.168.1.100:8000/connect
+# Disconnect specific bed
+curl -X POST "http://192.168.1.100:8000/disconnect?mac=XX:XX:XX:XX:XX:XX"
+
+# Reconnect
+curl -X POST "http://192.168.1.100:8000/connect?mac=XX:XX:XX:XX:XX:XX"
 ```
 
 ### Connection Reliability
