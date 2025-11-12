@@ -17,6 +17,9 @@ from .coordinator import OkinBedCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
+# Version check for debugging
+_LOGGER.warning("OKIN Bed Integration Loading - Version 2.0.3")
+
 PLATFORMS: list[Platform] = [
     Platform.COVER,
     Platform.BUTTON,
@@ -27,6 +30,7 @@ PLATFORMS: list[Platform] = [
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up OKIN Bed from a config entry."""
+    _LOGGER.info("Setting up OKIN Bed integration for %s", entry.data.get(CONF_DEVICE_NAME))
     hass.data.setdefault(DOMAIN, {})
 
     # Get connection mode and API URL (if set)
