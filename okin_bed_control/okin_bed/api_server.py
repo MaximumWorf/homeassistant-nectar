@@ -101,7 +101,7 @@ async def get_bed(mac_address: str) -> OkinBed:
     bed = bed_instances[mac]
 
     # Ensure connection
-    if not bed.is_connected:
+    if not bed.client or not bed.client.is_connected:
         try:
             logger.info(f"Connecting to bed {mac}")
             await bed.connect()
