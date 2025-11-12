@@ -14,7 +14,6 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import config_validation as cv
 
 from .const import (
-    DOMAIN,
     CONF_MAC_ADDRESS,
     CONF_DEVICE_NAME,
     CONF_CONNECTION_MODE,
@@ -41,7 +40,7 @@ class OkinBedConfigFlow(config_entries.ConfigFlow):
     """Handle a config flow for OKIN Bed."""
 
     VERSION = 1
-    DOMAIN = DOMAIN
+    DOMAIN = "okin_bed"
 
     def __init__(self) -> None:
         """Initialize the config flow."""
