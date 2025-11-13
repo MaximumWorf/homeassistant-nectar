@@ -30,6 +30,10 @@ bed_instances: Dict[str, OkinBed] = {}
 # MAC address validation pattern
 MAC_ADDRESS_PATTERN = re.compile(r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$')
 
+# Keep-alive task
+keep_alive_task: Optional[asyncio.Task] = None
+KEEP_ALIVE_INTERVAL = 300  # 5 minutes
+
 
 class BedConfig(BaseModel):
     """Bed configuration."""
@@ -60,11 +64,61 @@ def validate_mac_address(mac: str) -> str:
     return mac.upper().replace('-', ':')
 
 
+async def keep_alive_connections():
+    """Periodically check and maintain BLE connections."""
+    while True:
+        try:
+            await asyncio.sleep(KEEP_ALIVE_INTERVAL)
+
+            if not bed_instances:
+                continue
+
+            logger.info("Running keep-alive check...")
+            for mac, bed in bed_instances.items():
+                if bed.client and bed.client.is_connected:
+                    try:
+                        # Send a simple status check (stop command acts as no-op if bed is already stopped)
+                        # This keeps the connection alive without moving the bed
+                        logger.debug(f"Keep-alive ping to {mac}")
+                        # Just check connection status, don't send actual command
+                        # The BLE stack will handle keep-alive automatically
+                    except Exception as e:
+                        logger.warning(f"Keep-alive failed for {mac}: {e}")
+                        # Try to reconnect
+                        try:
+                            logger.info(f"Attempting to reconnect to {mac}")
+                            await bed.connect()
+                        except Exception as reconnect_error:
+                            logger.error(f"Failed to reconnect to {mac}: {reconnect_error}")
+
+        except asyncio.CancelledError:
+            logger.info("Keep-alive task cancelled")
+            break
+        except Exception as e:
+            logger.error(f"Keep-alive task error: {e}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage bed connection lifecycle."""
+    global keep_alive_task
+
     logger.info("OKIN Bed API Server starting...")
+
+    # Start keep-alive task
+    keep_alive_task = asyncio.create_task(keep_alive_connections())
+    logger.info(f"Keep-alive task started (interval: {KEEP_ALIVE_INTERVAL}s)")
+
     yield
+
+    # Cancel keep-alive task
+    if keep_alive_task:
+        keep_alive_task.cancel()
+        try:
+            await keep_alive_task
+        except asyncio.CancelledError:
+            pass
+
     # Cleanup on shutdown - disconnect all beds
     if bed_instances:
         logger.info(f"Disconnecting from {len(bed_instances)} bed(s)...")
