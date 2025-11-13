@@ -37,8 +37,16 @@ KEEP_ALIVE_INTERVAL = 300  # 5 minutes
 # Pre-configured beds (set via environment variables or config file)
 # Format: Comma-separated MAC addresses, e.g., "AA:BB:CC:DD:EE:FF,11:22:33:44:55:66"
 import os
+import json
+from pathlib import Path
+
 PRECONFIGURED_BEDS = os.environ.get('OKIN_BED_MACS', '').strip()
 AUTO_CONNECT_ON_STARTUP = os.environ.get('OKIN_AUTO_CONNECT', 'true').lower() == 'true'
+AUTO_SAVE_CONNECTIONS = os.environ.get('OKIN_AUTO_SAVE', 'true').lower() == 'true'
+
+# Persistent state file for remembering connected beds
+STATE_FILE = Path(os.environ.get('OKIN_STATE_FILE', '/var/lib/okin-bed/state.json'))
+STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
 
 
 class BedConfig(BaseModel):
@@ -97,6 +105,9 @@ async def keep_alive_connections():
                         except Exception as reconnect_error:
                             logger.error(f"Failed to reconnect to {mac}: {reconnect_error}")
 
+            # Save connected beds state periodically
+            save_connected_beds()
+
         except asyncio.CancelledError:
             logger.info("Keep-alive task cancelled")
             break
@@ -104,18 +115,65 @@ async def keep_alive_connections():
             logger.error(f"Keep-alive task error: {e}")
 
 
-async def auto_connect_beds():
-    """Auto-connect to pre-configured beds on startup."""
-    if not PRECONFIGURED_BEDS:
-        logger.info("No pre-configured beds. Beds will connect on first command.")
+def load_saved_beds():
+    """Load previously connected bed MAC addresses from state file."""
+    try:
+        if STATE_FILE.exists():
+            with open(STATE_FILE, 'r') as f:
+                state = json.load(f)
+                saved_macs = state.get('connected_beds', [])
+                if saved_macs:
+                    logger.info(f"Loaded {len(saved_macs)} bed(s) from state file: {', '.join(saved_macs)}")
+                    return saved_macs
+    except Exception as e:
+        logger.warning(f"Could not load state file: {e}")
+    return []
+
+
+def save_connected_beds():
+    """Save currently connected bed MAC addresses to state file."""
+    if not AUTO_SAVE_CONNECTIONS:
         return
 
-    mac_addresses = [mac.strip().upper() for mac in PRECONFIGURED_BEDS.split(',') if mac.strip()]
+    try:
+        connected_macs = [
+            mac for mac, bed in bed_instances.items()
+            if bed.client and bed.client.is_connected
+        ]
+
+        state = {'connected_beds': connected_macs}
+
+        with open(STATE_FILE, 'w') as f:
+            json.dump(state, f, indent=2)
+
+        logger.debug(f"Saved {len(connected_macs)} connected bed(s) to state file")
+
+    except Exception as e:
+        logger.warning(f"Could not save state file: {e}")
+
+
+async def auto_connect_beds():
+    """Auto-connect to pre-configured or previously connected beds on startup."""
+    mac_addresses = []
+
+    # First, try environment variable
+    if PRECONFIGURED_BEDS:
+        mac_addresses = [mac.strip().upper() for mac in PRECONFIGURED_BEDS.split(',') if mac.strip()]
+        logger.info(f"Using pre-configured beds from environment: {', '.join(mac_addresses)}")
+    # Otherwise, load from saved state
+    else:
+        saved_macs = load_saved_beds()
+        if saved_macs:
+            mac_addresses = saved_macs
+            logger.info(f"Using previously connected beds from state file")
+        else:
+            logger.info("No pre-configured beds. Beds will connect on first command and be remembered.")
+            return
 
     if not mac_addresses:
         return
 
-    logger.info(f"Auto-connecting to {len(mac_addresses)} pre-configured bed(s)...")
+    logger.info(f"Auto-connecting to {len(mac_addresses)} bed(s)...")
 
     for mac in mac_addresses:
         try:
@@ -167,6 +225,9 @@ async def lifespan(app: FastAPI):
             await keep_alive_task
         except asyncio.CancelledError:
             pass
+
+    # Save state before shutdown
+    save_connected_beds()
 
     # Cleanup on shutdown - disconnect all beds
     if bed_instances:
