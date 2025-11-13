@@ -34,6 +34,12 @@ MAC_ADDRESS_PATTERN = re.compile(r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$')
 keep_alive_task: Optional[asyncio.Task] = None
 KEEP_ALIVE_INTERVAL = 300  # 5 minutes
 
+# Pre-configured beds (set via environment variables or config file)
+# Format: Comma-separated MAC addresses, e.g., "AA:BB:CC:DD:EE:FF,11:22:33:44:55:66"
+import os
+PRECONFIGURED_BEDS = os.environ.get('OKIN_BED_MACS', '').strip()
+AUTO_CONNECT_ON_STARTUP = os.environ.get('OKIN_AUTO_CONNECT', 'true').lower() == 'true'
+
 
 class BedConfig(BaseModel):
     """Bed configuration."""
@@ -98,12 +104,55 @@ async def keep_alive_connections():
             logger.error(f"Keep-alive task error: {e}")
 
 
+async def auto_connect_beds():
+    """Auto-connect to pre-configured beds on startup."""
+    if not PRECONFIGURED_BEDS:
+        logger.info("No pre-configured beds. Beds will connect on first command.")
+        return
+
+    mac_addresses = [mac.strip().upper() for mac in PRECONFIGURED_BEDS.split(',') if mac.strip()]
+
+    if not mac_addresses:
+        return
+
+    logger.info(f"Auto-connecting to {len(mac_addresses)} pre-configured bed(s)...")
+
+    for mac in mac_addresses:
+        try:
+            # Validate MAC format
+            if not MAC_ADDRESS_PATTERN.match(mac):
+                logger.warning(f"Invalid MAC address format: {mac}")
+                continue
+
+            # Create bed instance
+            if mac not in bed_instances:
+                logger.info(f"Creating bed instance for {mac}")
+                bed_instances[mac] = OkinBed(mac_address=mac)
+
+            # Attempt connection
+            bed = bed_instances[mac]
+            logger.info(f"Connecting to {mac}...")
+            connected = await bed.connect()
+
+            if connected:
+                logger.info(f"✓ Successfully connected to {mac}")
+            else:
+                logger.warning(f"✗ Failed to connect to {mac} (will retry on first command)")
+
+        except Exception as e:
+            logger.error(f"Error connecting to {mac}: {e}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage bed connection lifecycle."""
     global keep_alive_task
 
     logger.info("OKIN Bed API Server starting...")
+
+    # Auto-connect to pre-configured beds
+    if AUTO_CONNECT_ON_STARTUP:
+        await auto_connect_beds()
 
     # Start keep-alive task
     keep_alive_task = asyncio.create_task(keep_alive_connections())
