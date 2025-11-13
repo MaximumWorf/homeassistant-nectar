@@ -7,10 +7,12 @@ Complete reverse-engineered solution for controlling OKIN adjustable beds from R
 This project provides:
 - ✅ Decompiled and analyzed OKIN bed Android app
 - ✅ Documented BLE protocol (UUIDs and command list)
-- ✅ Python library for Raspberry Pi
-- ✅ Home Assistant custom integration
+- ✅ Python library for Raspberry Pi with BLE control
+- ✅ **Home Assistant custom integration (HACS compatible)**
+- ✅ Remote API server for multi-instance setups
 - ✅ Command-line interface
-- ✅ **Captured and tested BLE command bytes** (Nectar Split King Luxe Adjustable Foundation)
+- ✅ **Fully tested and working** (Nectar Split King Luxe Adjustable Foundation)
+- ✅ **Connection keep-alive** for persistent BLE connections
 
 ## 📁 Project Structure
 
@@ -96,9 +98,89 @@ This project provides:
 - Save/Recall positions
 - Reset memory
 
+## ✨ Features
+
+### Home Assistant Integration
+- **UI Configuration Flow** - No YAML required
+- **Manual or Auto-Discovery** - Enter MAC address manually or auto-detect
+- **Direct or Remote Mode**:
+  - **Direct**: Home Assistant connects directly via Bluetooth
+  - **Remote**: Use a separate Raspberry Pi near the bed as BLE gateway
+- **Entity Types**:
+  - `cover.*` - Head, Foot, Lumbar position controls
+  - `button.*` - Preset positions (Flat, Zero Gravity, Anti-Snore, etc.)
+  - `switch.*` - Head/Foot massage controls
+  - `light.*` - Under-bed lighting
+- **Connection Keep-Alive** - Automatically maintains BLE connections
+
+### Remote API Server
+- Multi-bed support (control multiple beds from one Pi)
+- REST API with full bed control
+- Persistent BLE connections with auto-reconnect
+- Systemd service for auto-start on boot
+- Designed for 24/7 operation
+
 ## 🚀 Quick Start
 
-### 1. Install Python Library
+### Option A: Home Assistant Integration (Recommended)
+
+#### Via HACS (Easiest)
+
+1. **Add Custom Repository in HACS**:
+   - Open HACS → Integrations → ⋮ (menu) → Custom repositories
+   - Repository: `https://github.com/MaximumWorf/homeassistant-nectar`
+   - Category: Integration
+   - Click "Add"
+
+2. **Install the Integration**:
+   - HACS → Integrations → Search "OKIN"
+   - Click "Download"
+   - Restart Home Assistant
+
+3. **Add the Integration**:
+   - Settings → Devices & Services → Add Integration → "OKIN"
+   - Choose setup method:
+     - **Manual setup** - Enter bed MAC address (for remote API mode)
+     - **Discovered** - Select from auto-detected devices (for direct mode)
+   - Choose connection mode:
+     - **Direct** - HA connects via its own Bluetooth
+     - **Remote** - Connect via API server on another Raspberry Pi
+   - Give your bed a name
+
+#### Manual Installation
+
+```bash
+# Copy to Home Assistant custom_components
+cd /config
+mkdir -p custom_components
+cd custom_components
+git clone https://github.com/MaximumWorf/homeassistant-nectar.git
+mv homeassistant-nectar/custom_components/okin_bed .
+rm -rf homeassistant-nectar
+
+# Restart Home Assistant
+# Then add via UI: Settings → Devices & Services → Add Integration → OKIN
+```
+
+### Option B: Remote API Server (For Split King or Remote Setup)
+
+**Use this if:**
+- Home Assistant is far from your bed
+- You have a split king with two beds
+- You want one Raspberry Pi near the bed handling Bluetooth
+
+#### One-Line Installer
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/MaximumWorf/homeassistant-nectar/main/quick_install.sh | bash
+```
+
+This installs:
+- Python library in virtual environment
+- API server as systemd service (auto-starts on boot)
+- Scanner tool to find bed MAC addresses
+
+#### Manual Installation
 
 ```bash
 cd okin_bed_control

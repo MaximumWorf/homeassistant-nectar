@@ -10,7 +10,7 @@ This is a reverse-engineered Bluetooth Low Energy (BLE) control system for OKIN 
 - Decompiled Android app analysis (`decompiled/`, `extracted/`)
 - Protocol documentation
 
-**Status**: BLE command bytes in `okin_bed_control/okin_bed/constants.py` have been **captured and tested** on a Nectar Split King Luxe Adjustable Foundation. All core functionality (position controls, presets, massage, lighting) is confirmed working. Some optional commands still need capture (see constants.py for "NOT YET CAPTURED" markers).
+**Status**: **FULLY WORKING** ✅ - Integration is complete and tested on Nectar Split King Luxe Adjustable Foundation. BLE command bytes are captured, Home Assistant integration is functional via HACS, and remote API server supports split king setups with persistent BLE connections and keep-alive.
 
 ## Project Architecture
 
@@ -43,11 +43,14 @@ The core library follows a clean async/await pattern using the `bleak` library:
 
 ### Home Assistant Integration
 
-Located in `okin_bed/` (at repository root for HACS compatibility):
+Located in `custom_components/okin_bed/` (HACS compatible structure):
 
-- **Platform Support**: Cover, Switch, Light, Sensor entities
-- **Config Flow**: UI-based configuration (config_flow: true in manifest.json)
-- **Bluetooth Integration**: Uses HA's bluetooth integration (declared in manifest.json)
+- **Platform Support**: Cover, Button, Switch, Light entities
+- **Config Flow**: Full UI-based configuration with manual MAC entry and auto-discovery
+- **Connection Modes**:
+  - **Direct**: HA uses built-in Bluetooth
+  - **Remote**: HA connects to API server on separate Raspberry Pi
+- **Architecture**: Coordinator pattern for connection management (supports both direct BLE and HTTP API)
 - **Structure**:
   - `__init__.py`: Entry point, platform setup
   - `cover.py`: Bed section controls (head, lumbar, foot)
@@ -63,24 +66,35 @@ The `decompiled/` and `extracted/` directories contain reverse-engineered Androi
 
 ## Development Commands
 
-### Python Library Development
+### API Server Development
 
 ```bash
-# Install in development mode
+# Install and start API server
 cd okin_bed_control
 pip install -e .
 
-# Install with dev dependencies (when implemented)
-pip install -e ".[dev]"
+# Run API server manually (for testing)
+okin-bed-server --host 0.0.0.0 --port 8000
 
-# Run tests (when implemented)
-pytest
+# Or use installer for production
+bash quick_install.sh
 
+# Check service status
+systemctl status okin-bed-server.service
+
+# View logs
+journalctl -u okin-bed-server.service -f
+```
+
+### Python Library Development
+
+```bash
 # Scan for bed devices
-python -m okin_bed.scanner
+okin-bed-scanner
 
 # Use CLI
 okin-bed --mac XX:XX:XX:XX:XX:XX head-up
+okin-bed --mac XX:XX:XX:XX:XX:XX zero-gravity
 ```
 
 ### Home Assistant Testing
@@ -159,14 +173,14 @@ This is handled in `_discover_characteristics()` method.
 
 ## Important Implementation Notes
 
-### Command Byte Updates
+### Command Implementation
 
-Command bytes have been captured and tested for Nectar Split King Luxe:
+All core commands are working:
 
-1. All core commands in `okin_bed_control/okin_bed/constants.py` are confirmed working
-2. Commands follow structure: `[0x5a] [0x01] [0x03] [0x10] [0x30] [COMMAND_BYTE] [0xa5]`
-3. Some optional commands still marked "NOT YET CAPTURED" (ASCENT, extra massage waves, brightness)
-4. If adding new commands: test individually, verify byte sequence, update constants.py
+1. Commands in `okin_bed_control/okin_bed/constants.py` are tested and confirmed
+2. Command structure: `[0x5a] [0x01] [0x03] [0x10] [0x30] [COMMAND_BYTE] [0xa5]`
+3. Library is bundled into HA integration at `custom_components/okin_bed/lib/`
+4. API server implements keep-alive (checks every 5 minutes, auto-reconnects)
 
 ### Safety Considerations
 
