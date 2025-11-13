@@ -45,8 +45,21 @@ AUTO_CONNECT_ON_STARTUP = os.environ.get('OKIN_AUTO_CONNECT', 'true').lower() ==
 AUTO_SAVE_CONNECTIONS = os.environ.get('OKIN_AUTO_SAVE', 'true').lower() == 'true'
 
 # Persistent state file for remembering connected beds
-STATE_FILE = Path(os.environ.get('OKIN_STATE_FILE', '/var/lib/okin-bed/state.json'))
-STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+# Try /var/lib first, fallback to home directory if permission denied
+default_state_path = '/var/lib/okin-bed/state.json'
+fallback_state_path = str(Path.home() / '.okin-bed' / 'state.json')
+
+STATE_FILE_PATH = os.environ.get('OKIN_STATE_FILE', default_state_path)
+STATE_FILE = Path(STATE_FILE_PATH)
+
+# Try to create state directory, fallback to home directory if permission denied
+try:
+    STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+except PermissionError:
+    logger.warning(f"Cannot create {STATE_FILE.parent}, using home directory instead")
+    STATE_FILE = Path(fallback_state_path)
+    STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    logger.info(f"State file location: {STATE_FILE}")
 
 
 class BedConfig(BaseModel):
